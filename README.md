@@ -4,7 +4,7 @@
 
 Agent skills for lattice gauge theory with [JuliaQCD](https://github.com/akio-tomiya/LatticeQCD.jl) (v1 and later), for Claude Code and Codex.
 
-Status: early version. Written and tested: pure-gauge HMC with run-quality monitoring (`juliaqcd-generate`), pure-gauge measurements with the gradient flow, t0, w0, Wilson loops, and the static potential (`juliaqcd-measure`), and a reference implementation of gauge groups with checks (`juliaqcd-extend`). The other skills are placeholders.
+Status: early version. Written and tested: pure-gauge HMC with run-quality monitoring (`juliaqcd-generate`), pure-gauge measurements with the gradient flow, t0, w0, Wilson loops, and the static potential, and quenched Wilson and Wilson–clover meson correlators with effective masses (`juliaqcd-measure`), and a reference implementation of gauge groups with checks (`juliaqcd-extend`). The other skills are placeholders.
 
 ## What it is for
 
@@ -45,7 +45,7 @@ Codex: copy the folders under `skills/` into your Codex skills directory. (Not t
 Then create a JuliaQCD environment once:
 
 ```
-julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2", "Wilsonloop"])'
+julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "LatticeDiracOperators", "StableRNGs", "JLD2", "Wilsonloop"])'
 ```
 
 Compiling JuliaQCD takes about 1.5 GB of memory. Run the checks and the simulations on a workstation or cluster node rather than a laptop with little memory; the skills do the same.

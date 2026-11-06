@@ -22,7 +22,7 @@ written yet.
    and can run while waiting for the answer.
 2. Set up an environment once and keep its Manifest.toml with the results:
    ```
-   julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2", "Wilsonloop"])'
+   julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "LatticeDiracOperators", "StableRNGs", "JLD2", "Wilsonloop"])'
    ```
 3. Run the checks on a small lattice with the same group and dimension:
    ```

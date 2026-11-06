@@ -98,6 +98,11 @@ State these plainly; do not invent APIs for them.
   `juliaqcd-extend`.
 - QCDMeasurements eigenvalue measurement for operators other than Wilson.
   Use `eigensystem` from LatticeDiracOperators instead.
+- Wilson fermion boundary phases through `Initialize_pseudofermion_fields`:
+  its `boundarycondition` keyword is dropped silently (always (1, 1, 1, −1)),
+  and the operator's `"boundarycondition"` parameter is not used; the
+  phases stored in the field act. `MesonCorrelatorMeasurement` accepts only
+  the default phases. See `juliaqcd-measure/references/mesons.md`.
 - U(1) outside 2 dimensions is not documented (the code does not forbid
   4D, and tests use it). Heat bath and overrelaxation need Nc ≥ 2.
 - A public random gauge transformation.

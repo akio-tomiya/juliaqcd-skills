@@ -96,6 +96,46 @@ function creutz_ratios(W)
 end
 
 """
+    fold_correlator(C)
+
+(C(Δ) + C(T − Δ))/2 for Δ = 0, …, T/2 from C indexed by Δ = 0, …, T − 1
+(entry Δ + 1). Correct for correlators that are even under time reflection,
+as the local meson correlators with the same operator at source and sink are.
+"""
+function fold_correlator(C)
+    T = length(C)
+    return [(C[1+Δ] + C[1+mod(T - Δ, T)]) / 2 for Δ in 0:T÷2]
+end
+
+"""
+    effective_mass_cosh(C, T)
+
+Effective mass m(Δ), Δ = 0, …, length(C) − 2, from a correlator
+C(Δ) ∝ cosh(m (Δ − T/2)) on a lattice of time extent T: the solution of
+C(Δ)/C(Δ+1) = cosh(m(Δ − T/2))/cosh(m(Δ + 1 − T/2)). NaN where the ratio
+admits no positive solution (noise, or Δ + 1 > T/2).
+"""
+function effective_mass_cosh(C, T)
+    m = fill(NaN, length(C) - 1)
+    for Δ in 0:length(C)-2
+        r = C[Δ+1] / C[Δ+2]
+        (isfinite(r) && r > 1 && Δ + 1 <= T / 2) || continue
+        g(x) = cosh(x * (Δ - T / 2)) / cosh(x * (Δ + 1 - T / 2)) - r
+        lo, hi = 0.0, 1.0
+        while g(hi) < 0 && hi < 50
+            hi *= 2
+        end
+        g(hi) < 0 && continue
+        for _ in 1:200
+            mid = (lo + hi) / 2
+            g(mid) < 0 ? (lo = mid) : (hi = mid)
+        end
+        m[Δ+1] = (lo + hi) / 2
+    end
+    return m
+end
+
+"""
     auto_bin(series)
 
 Bin size for `jackknife`: four times the integrated autocorrelation time of

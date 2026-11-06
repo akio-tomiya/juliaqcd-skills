@@ -1,17 +1,23 @@
 ---
 name: juliaqcd-measure
-description: "Measure pure-gauge observables on JuliaQCD gauge configurations and get numbers with errors: Wilson loops, the static potential and Creutz ratios, the gradient flow with t0, w0, and the topological charge, for SU(N) in 2, 3, or 4 dimensions. Every measurement is checked against an independent reference implementation. Use when the user has configurations (for example from juliaqcd-generate) and wants t0, w0, a lattice spacing, the potential, or Q. Meson correlators and Dirac eigenvalues are planned."
+description: "Measure observables on JuliaQCD gauge configurations and get numbers with errors: Wilson loops, the static potential and Creutz ratios, the gradient flow with t0, w0, and the topological charge (SU(N) in 2, 3, or 4 dimensions), and quenched Wilson or Wilson-clover meson correlators with effective masses (four dimensions). Every measurement is checked against an independent reference implementation. Use when the user has configurations (for example from juliaqcd-generate) and wants t0, w0, a lattice spacing, the potential, Q, a pion or other meson correlator, or an effective mass. Dirac eigenvalues are planned."
 ---
 
 # juliaqcd-measure
 
-Status: pure-gauge measurements on ensembles written by
-`juliaqcd-generate/scripts/hmc_puregauge.jl` are written and tested:
-Wilson loops W(R,T), the effective potential, Creutz ratios, the Wilson
-flow with E(t), t0, w0, and the topological charge after the flow. Not
-written yet: smearing of the spatial links for Wilson loops, Polyakov-loop
-correlators, fermion measurements (meson correlators, effective masses,
-Dirac eigenvalues), gauge fixing, and reading ILDG files.
+Status: on ensembles written by
+`juliaqcd-generate/scripts/hmc_puregauge.jl`, written and tested are the
+pure-gauge measurements (Wilson loops W(R,T), the effective potential,
+Creutz ratios, the Wilson flow with E(t), t0, w0, and the topological
+charge after the flow) and quenched meson correlators with Wilson or
+Wilson–clover valence quarks (point source, all 16 local channels, any
+momentum) with cosh effective masses. Not written yet: fits of correlators,
+the PCAC mass, smeared sources, staggered and domain-wall valence quarks,
+Dirac eigenvalues, smearing of the spatial links for Wilson loops,
+Polyakov-loop correlators, gauge fixing, and reading ILDG files.
+
+Quenched means the configurations come from the pure-gauge action: the
+valence quarks see no sea quarks. Say so when reporting meson masses.
 
 ## Workflow
 
@@ -82,6 +88,57 @@ Dirac eigenvalues), gauge fixing, and reading ILDG files.
    that a V(R) has no plateau at T ≤ 2. All four are correct: this lattice
    is too small, too coarse, and too short in T for a scale or a
    potential.
+
+## Meson correlators (quenched, four dimensions)
+
+The same five steps, with these scripts. Conventions, traps, and what each
+check tests are in `references/mesons.md`; read it before comparing with
+another code or a paper.
+
+1. Settings table: the run directory, κ, c_SW (0 for the unimproved Wilson
+   operator), the channels, the momenta, and the source rule. κ and c_SW
+   are physics parameters: ask, never fill them in (`measure_mesons.jl`
+   stops without them). Fermion boundary phases are periodic in space and
+   antiperiodic in time; QCDMeasurements 1.0.1 accepts nothing else.
+   Quenched Wilson quarks have exceptional configurations near κ_c (for
+   example κ_c ≈ 0.169 at β = 5.7 and 0.157 at β = 6.0 in the
+   literature); stay well below κ_c unless the user knows the ensemble.
+2. Checks, with the same number of colors:
+   ```
+   julia --project=env scripts/check_fermion.jl colors=3 lattice=4,4,4,6
+   ```
+   Every line must say PASS. About 35 seconds and 1.8 GB for SU(3) on one
+   core. The environment needs `LatticeDiracOperators` as a direct
+   dependency; the environment command of `juliaqcd-generate` includes it,
+   and an older environment needs `Pkg.add("LatticeDiracOperators")`.
+3. Cost trial with `stride=`. Measured on one Apple M4 core: 2.7 s per
+   configuration for 6⁴ SU(3), Wilson, κ = 0.15, five channels (12
+   solves). The cost grows with the volume and with 1/(κ_c − κ).
+4. Measure:
+   ```
+   julia --project=env scripts/measure_mesons.jl run=runs/NAME kappa=0.150 csw=0
+   ```
+   Output goes to `runs/NAME/measure/mesons_kappa0.15_csw0.0/` (the folder
+   name can be set with `name=`; `mesons.csv`, and
+   `solver.csv` with the source and the true solver residual of each
+   configuration). The source moves from configuration to configuration by
+   a fixed rule, which lowers the autocorrelation.
+5. Analyze:
+   ```
+   julia scripts/analyze_mesons.jl runs/NAME
+   ```
+   It folds C(Δt) with C(L₄ − Δt), averages the spatial directions of the
+   vector and axial channels, and prints the cosh effective mass with a
+   binned jackknife, a bin-size table, and WARN lines (no plateau, capped
+   bin, exceptional configurations, large residuals, m_π L < 4). There is
+   no fit. When m_eff has no plateau, the last value is an upper estimate
+   of the mass; say so, and do not quote it as the mass.
+
+   Example (6⁴ SU(3), β = 5.7, the ensemble above, Wilson κ = 0.150, 90
+   configurations): m_eff of the pion falls 2.28, 1.53, 1.33 over Δt = 0,
+   1, 2, with a WARN that there is no plateau. With L₄ = 6 the excited
+   states have not died out; this lattice is far too short in time for a
+   meson mass.
 
 Run `monitor.jl` from `juliaqcd-generate` first. Do not measure on a run
 whose monitor says FAIL. Its WARN on the topological charge concerns the

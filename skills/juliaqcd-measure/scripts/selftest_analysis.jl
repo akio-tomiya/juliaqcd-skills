@@ -5,7 +5,9 @@
 #
 # 1. jackknife of the mean of independent data equals s/√n
 # 2. effective potential and Creutz ratios of W = c exp(-σRT - μ(R+T))
-#    equal μ + σR and σ exactly
+#    equal μ + σR and σ exactly; the cosh effective mass of a one-state
+#    correlator equals its mass exactly, and with an excited state it falls
+#    monotonically towards the ground state
 # 3. on autocorrelated synthetic flow data (τ_int ≈ 4.5), the error of t0
 #    from the binned jackknife (bin from auto_bin) agrees with the spread of
 #    t0 over independent replicas, and the unbinned error is too small
@@ -40,6 +42,20 @@ function main()
     dv = maximum(abs(V[R, T] - (μ + σ * R)) for R in 1:5, T in 1:4)
     dc = maximum(abs.(C .- σ))
     say(max(dv, dc) < 1e-12, "effective potential and Creutz ratios", @sprintf("max error %.1e", max(dv, dc)))
+
+    # meson correlator: ground state plus an excited state of 0.8 times its
+    # weight at Δ = 0, which makes m_eff fall towards m
+    T, mπ, mx = 16, 0.45, 1.3
+    Cfull = [cosh(mπ * (Δ - T / 2)) / cosh(mπ * T / 2) + 0.8cosh(mx * (Δ - T / 2)) / cosh(mx * T / 2)
+             for Δ in 0:T-1]
+    Cf = fold_correlator(Cfull)
+    meff = effective_mass_cosh(Cf, T)
+    ground = effective_mass_cosh(fold_correlator([cosh(mπ * (Δ - T / 2)) for Δ in 0:T-1]), T)
+    single = maximum(abs.(ground .- mπ))
+    falls = all(diff(meff) .< 0) && all(meff .> mπ) && abs(meff[end] - mπ) < 0.01
+    sym = maximum(abs(Cfull[1+Δ] - Cfull[1+T-Δ]) for Δ in 1:T-1)
+    say(single < 1e-12 && falls && sym < 1e-12, "cosh effective mass of a known correlator",
+        @sprintf("single state error %.1e; two states: m_eff %.3f → %.4f (m = %.2f)", single, meff[1], meff[end], mπ))
 
     # synthetic E(t) = a + b t with autocorrelated a and b
     ts = collect(0.0:0.02:3.0)

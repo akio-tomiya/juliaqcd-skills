@@ -7,7 +7,7 @@ Julia の格子ゲージ理論のパッケージ群 [JuliaQCD](https://github.co
 まだ作り始めたばかりの版です。今は次の 3 つが動き、試験も済んでいます。ほかのスキルは名前と予定の範囲だけで、中身はこれから書きます。
 
 - 純ゲージの HMC と、生成の質の監視（`juliaqcd-generate`）
-- 純ゲージの測定。グラディエントフローと t0・w0、Wilson ループと静的ポテンシャル（`juliaqcd-measure`）
+- 測定。純ゲージのグラディエントフローと t0・w0、Wilson ループと静的ポテンシャル。クエンチ近似での Wilson と clover のクォークによるメソンの相関関数と有効質量（`juliaqcd-measure`）
 - ゲージ群の参照実装と検査（`juliaqcd-extend`）
 
 ## 何をするものか
@@ -58,7 +58,7 @@ Codex では、`skills/` の下のフォルダを Codex のスキルのフォル
 JuliaQCD の環境は、スキルの指示に従って一度作れば、あとは使い回せます。
 
 ```
-julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2", "Wilsonloop"])'
+julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "LatticeDiracOperators", "StableRNGs", "JLD2", "Wilsonloop"])'
 ```
 
 ## 例のプロンプト
