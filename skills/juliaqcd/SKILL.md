@@ -5,7 +5,7 @@ description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefiel
 
 # JuliaQCD
 
-Status: skeleton (v0.0.1). The sub-skills are placeholders.
+Status: skeleton (v0.0.1). Only the gauge-group part of `juliaqcd-extend` is written; the other sub-skills are placeholders.
 
 ## Common workflow
 

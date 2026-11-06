@@ -1,0 +1,20 @@
+name: selftest
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  groups:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        julia: ["1.11", "1.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia }}
+      - name: Group checks and self-test
+        run: julia skills/juliaqcd-extend/scripts/selftest.jl
