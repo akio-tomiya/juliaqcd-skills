@@ -1,0 +1,17 @@
+# Planning notes (private, not for the public repository)
+NOTES.md
+
+# Word list used for the pre-release leak check (kept outside git)
+private_terms*.txt
+
+# Julia
+Manifest.toml
+*.jl.cov
+*.jl.mem
+
+# Outputs of example runs
+runs/
+*.ildg
+*.jld2
+
+.DS_Store

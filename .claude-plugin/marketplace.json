@@ -1,0 +1,16 @@
+{
+  "name": "juliaqcd-skills",
+  "owner": {
+    "name": "Akio Tomiya"
+  },
+  "metadata": {
+    "description": "Agent skills for lattice gauge theory with JuliaQCD."
+  },
+  "plugins": [
+    {
+      "name": "juliaqcd-skills",
+      "source": "./",
+      "description": "Research-assistant skills for lattice gauge theory with JuliaQCD (v1 and later)."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "juliaqcd-skills",
+  "description": "Research-assistant skills for lattice gauge theory with JuliaQCD (v1 and later): setup, generation, measurement, analysis, reproduction, and extension, with verification at every step.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Akio Tomiya"
+  },
+  "license": "MIT",
+  "keywords": ["julia", "lattice-qcd", "lattice-gauge-theory", "juliaqcd"]
+}
