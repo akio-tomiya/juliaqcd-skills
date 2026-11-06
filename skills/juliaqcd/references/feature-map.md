@@ -1,6 +1,6 @@
 # JuliaQCD v1 feature map
 
-Checked against the default branches on 2026-11-06 (README, changes.md,
+Checked against the default branches on 2026-11-06 (eigenvalue, I/O, and LatticeQCD compat entries against the installed source on 2026-11-07) (README, changes.md,
 docstrings, source). Regenerate for each release; do not trust this file for
 a newer version without checking.
 
@@ -16,6 +16,13 @@ Julia 1.11 and 1.12 (the versions the packages are tested with).
 | LatticeDiracOperators.jl | 1.1.4 registered | 1.1.4 (smeared-link HMC since 1.1.3, generalized domain-wall even-odd since 1.1.4) |
 | QCDMeasurements.jl | 1.0.1 | 1.0.1 (local densities) |
 | LatticeQCD.jl | 2.0.4 | 2.0 |
+
+LatticeQCD.jl 1.3 and earlier need Gaugefields 0.7 or older (before v1);
+LatticeQCD 2.0 needs Gaugefields 1.1.4 or later, LatticeDiracOperators
+1.1.2 or later, and QCDMeasurements 1. An environment that resolves to
+LatticeQCD 1.x is a pre-v1 environment: errors from inside `run_wizard()` or
+`run_LQCD` there are version problems, not bugs in the user's input. Check
+with `Pkg.status()` and create a fresh environment with LatticeQCD 2.
 
 VisualizingLQCD.jl 0.0.1 requires Gaugefields 0.5 and cannot share an
 environment with the v1 packages. Visualize ILDG files written by v1 in a
@@ -48,9 +55,11 @@ Higher packages depend on lower ones.
   - Gauge fixing: Landau and Coulomb in 4D (`gaugefixing!`).
   - Z(Nc) 2-form gauge fields ('t Hooft flux) and twisted boundary
     conditions (4D); dynamical B field for SU(N)/Z(N).
-  - I/O: `save_configuration`, `load_configuration!` with ILDG (32 and 64
-    bit), Bridge++ text, JLD2. JLD2 can be read back with a different
-    process grid, device, or precision.
+  - I/O: `save_configuration(file, U; format)` and
+    `load_configuration!(U, file; format)` with `format=:jld2` (default),
+    `:ildg` (32 and 64 bit), or `:bridge` (Bridge++ text). JLD2 can be read
+    back with a different process grid, device, or precision. No NERSC,
+    openQCD, or MILC format.
   - Enzyme automatic differentiation; learned link smearing (L-CNN, `LExp`).
   - Instanton initial configurations (SU(2) and embedded in SU(N)).
 - **LatticeDiracOperators.jl**: Wilson, Wilson–clover, staggered, HISQ,
@@ -76,6 +85,13 @@ Higher packages depend on lower ones.
   | Chiral condensate | Wilson, staggered |
   | Eigenvalues of D (`EigenvalueMeasurement`) and of M†M (`MdagMSpectrumMeasurement`) | Wilson only (Arpack) |
 
+  `EigenvalueMeasurement(U; fermiontype="Wilson", κ=1, r=1, nev=10,
+  which=:SM, isDdagD=false, solver="Arpack", BoundaryCondition=nothing)`
+  (QCDMeasurements 1.0.1): `measure` builds D as a sparse matrix and calls
+  Arpack `eigs(D; nev, which)`, or `eigs(D†D)` with `isDdagD=true`;
+  `solver="exact"` diagonalizes the dense matrix. The default κ = 1 is not
+  a physical choice: always pass κ.
+
   Dimension limits, checked with QCDMeasurements 1.0.1:
   `WilsonLoopMeasurement` works in 4D only (in 2D and 3D its constructor
   throws, and its normalization assumes three spatial directions);
@@ -98,6 +114,8 @@ State these plainly; do not invent APIs for them.
   `juliaqcd-extend`.
 - QCDMeasurements eigenvalue measurement for operators other than Wilson.
   Use `eigensystem` from LatticeDiracOperators instead.
+- Readers for NERSC, openQCD, or MILC configurations. Convert them to ILDG
+  with another tool, or ask the JuliaQCD developers.
 - Wilson fermion boundary phases through `Initialize_pseudofermion_fields`:
   its `boundarycondition` keyword is dropped silently (always (1, 1, 1, −1)),
   and the operator's `"boundarycondition"` parameter is not used; the

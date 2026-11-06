@@ -70,6 +70,8 @@ function main(args)
     isempty(args) && error("usage: julia analyze_mesons.jl RUN_DIR [name=...] [therm=N] [bin=N]")
     run = args[1]
     opts = Dict(Pair(split(a, '='; limit=2)...) for a in args[2:end])
+    unknown = setdiff(keys(opts), ("name", "therm", "bin",))
+    isempty(unknown) || error("unknown argument(s): $(join(sort(collect(unknown)), ", ")). This script accepts: " * join(("name", "therm", "bin",), ", "))
     meta = TOML.parsefile(joinpath(run, "meta.toml"))
     L = Tuple(meta["lattice"])
     T = L[4]
@@ -79,7 +81,7 @@ function main(args)
         length(dirs) == 1 || error("several or no measure/mesons_* folders ($(join(dirs, ", "))); give name=")
         dir = joinpath(run, "measure", dirs[1])
     else
-        dir = joinpath(run, "measure", "mesons_" * name)
+        dir = joinpath(run, "measure", startswith(name, "mesons_") ? name : "mesons_" * name)
     end
     mmeta = TOML.parsefile(joinpath(dir, "meta.toml"))
     h = read_history(joinpath(run, "history.csv"))

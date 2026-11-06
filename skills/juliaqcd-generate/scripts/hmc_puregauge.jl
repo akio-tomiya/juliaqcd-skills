@@ -1,16 +1,22 @@
 # Pure-gauge HMC with the Wilson plaquette action, for SU(N) in 2, 3, or 4
 # dimensions, with a history file for monitoring, checkpoints, and restart.
+# Only the Wilson action: a β meant for an improved action (Iwasaki,
+# Symanzik) would silently give a Wilson ensemble at a different coupling.
+# One process on the CPU (process_grid = 1); no MPI.
 #
 #   julia --project=ENV hmc_puregauge.jl out=runs/su3_b5.7_4x4x4x8 \
 #       colors=3 lattice=4,4,4,8 beta=5.7 ntraj=500 steps=20 tau=1.0 seed=1234
 #
-# Optional: start=hot|cold, save_every=50, q_every=10 (4D only, 0 = off),
+# Optional: start=cold|hot (default cold), save_every=50, q_every=10 (4D only, 0 = off),
 # flow_time=<t/a²> (default: sqrt(8t) = 0.3 × smallest extent), restart=true.
 #
 # The output directory must not exist unless restart=true. Files written:
 #   meta.toml       parameters, versions, host, start time
 #   Manifest.toml   copy of the active environment's manifest
-#   history.csv     one line per trajectory
+#   history.csv     one line per trajectory: traj, dH, exp_minus_dH, accepted,
+#                   plaquette, polyakov_re, polyakov_im (Polyakov loop along
+#                   the last direction), Q (flowed, every q_every; else NaN),
+#                   seconds
 #   checkpoints/    conf_NNNNNN.jld2 (configuration after trajectory NNNNNN)
 #   state.toml      next trajectory number, for restart
 #
@@ -45,6 +51,7 @@ end
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("beta", "colors", "flow_time", "lattice", "ntraj", "out", "q_every", "restart", "save_every", "seed", "start", "steps", "tau"))
     # Physics parameters have no defaults: a missing one stops the run.
     for key in ("out", "colors", "lattice", "beta", "ntraj")
         haskey(a, key) || error("$key=... is required (physics parameters and the run length are never defaulted)")
@@ -57,7 +64,7 @@ function main(args)
     steps = getarg(a, "steps", 20)
     tau = getarg(a, "tau", 1.0)
     seed = getarg(a, "seed", 1234)
-    start = getarg(a, "start", :hot)
+    start = getarg(a, "start", :cold)
     save_every = getarg(a, "save_every", 50)
     dim = length(lattice)
     q_every = getarg(a, "q_every", dim == 4 ? 10 : 0)

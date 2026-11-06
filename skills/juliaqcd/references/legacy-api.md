@@ -39,7 +39,7 @@ expected one.
 | `Plaquette_measurement` and other snake-case measurement types | `PlaquetteMeasurement` and so on (old names remain as aliases) |
 | `prepare_measurement_from_dict` | `prepare_measurement` |
 | domain-wall field `w[s]` (one 4D field per slice) | one 5D `LatticeMatrix` |
-| old LatticeQCD wizard | `run_wizard()` (old one: `run_wizard_legacy()`) |
+| old LatticeQCD wizard | `run_wizard()` in LatticeQCD 2 (the pre-v1 wizard is `run_wizard_legacy()`); an error from inside `run_wizard()` is an environment problem, see `juliaqcd-setup` |
 
 Every v1 script starts with
 

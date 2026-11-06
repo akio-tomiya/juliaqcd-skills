@@ -185,6 +185,8 @@ function main(args)
     isempty(args) && error("usage: julia analyze_ensemble.jl RUN_DIR [therm=N] [bin=N] [c=0.3] [sqrt_t0_fm=X]")
     run = args[1]
     opts = Dict(Pair(split(a, '='; limit=2)...) for a in args[2:end])
+    unknown = setdiff(keys(opts), ("therm", "bin", "c", "sqrt_t0_fm",))
+    isempty(unknown) || error("unknown argument(s): $(join(sort(collect(unknown)), ", ")). This script accepts: " * join(("therm", "bin", "c", "sqrt_t0_fm",), ", "))
     meta = TOML.parsefile(joinpath(run, "meta.toml"))
     L = Tuple(meta["lattice"])
     h = read_history(joinpath(run, "history.csv"))

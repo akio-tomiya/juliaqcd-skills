@@ -42,6 +42,7 @@ end
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("beta", "colors", "every", "lattice", "ntraj", "rmax", "seed"))
     N = getarg(a, "colors", 2)
     haskey(a, "beta") || error("beta=... is required")
     beta = getarg(a, "beta", 4.0)

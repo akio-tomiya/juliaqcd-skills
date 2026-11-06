@@ -63,6 +63,7 @@ parse_momenta(s) = [Tuple(parse.(Int, split(strip(m), ','))) for m in split(s, '
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("run", "kappa", "csw", "channels", "momenta", "move_source", "eps_CG", "stride", "name"))
     for k in ("run", "kappa", "csw")
         haskey(a, k) || error("$k= is required (kappa and csw are physics parameters: ask the user, never guess)")
     end
@@ -79,6 +80,7 @@ function main(args)
     eps_CG = getarg(a, "eps_CG", 1e-20)
     stride = getarg(a, "stride", 1)
     name = get(a, "name", "kappa$(κ)_csw$(cSW)")
+    startswith(name, "mesons_") && (name = name[length("mesons_")+1:end])
     params = Dict("kappa" => κ, "csw" => cSW, "channels" => String.(channels),
         "momenta" => [collect(p) for p in momenta], "move_source" => move,
         "eps_CG" => eps_CG, "boundary_phases" => [1, 1, 1, -1],

@@ -14,6 +14,19 @@ function parse_args(args)
     return d
 end
 
+"""
+    check_keys(d, known)
+
+Stop on an argument the script does not know. Without this, a typo or an
+option the script does not have (for example action=iwasaki) would be
+ignored and the run would go ahead with the defaults.
+"""
+function check_keys(d, known)
+    unknown = sort(collect(setdiff(keys(d), known)))
+    isempty(unknown) || error("unknown argument(s): $(join(unknown, ", ")). " *
+                              "This script accepts: $(join(sort(collect(known)), ", ")).")
+end
+
 getarg(d, key, default) = haskey(d, key) ? convert_arg(default, d[key]) : default
 convert_arg(::Int, s) = parse(Int, s)
 convert_arg(::Float64, s) = parse(Float64, s)

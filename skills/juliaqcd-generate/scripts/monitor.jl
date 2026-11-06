@@ -19,6 +19,8 @@ function main(args)
     isempty(args) && error("usage: julia monitor.jl RUN_DIR [therm=N]")
     dir = args[1]
     opts = Dict(Pair(split(a, '='; limit=2)...) for a in args[2:end])
+    unknown = setdiff(keys(opts), ("therm",))
+    isempty(unknown) || error("unknown argument(s): $(join(sort(collect(unknown)), ", ")). This script accepts: " * join(("therm",), ", "))
     h = read_history(joinpath(dir, "history.csv"))
     n = length(h["traj"])
     println("== ", dir, "  (", n, " trajectories)")

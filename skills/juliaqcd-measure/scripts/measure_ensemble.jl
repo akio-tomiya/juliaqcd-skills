@@ -42,6 +42,7 @@ measured(path) = isfile(path) ?
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("run", "rmax", "tmax", "flow_step", "flow_tmax", "flow_every", "wilson", "flow", "stride"))
     haskey(a, "run") || error("run=RUN_DIR is required")
     run = a["run"]
     meta = TOML.parsefile(joinpath(run, "meta.toml"))

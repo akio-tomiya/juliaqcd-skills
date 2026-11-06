@@ -6,8 +6,8 @@
 #
 # Optional: ntraj=300 (per run), therm=50, seed=1234, workdir=<tmp dir>,
 # mutation=<name> (deliberately broken variants for selftest_hmc.jl).
-# Takes a few minutes on one core for 4^4 SU(3). Do not run on a laptop
-# with little memory; the compilation alone needs about 2 GB.
+# About 2 minutes on one core and 1.5 GB of memory for 4^4 SU(3), most of
+# it compilation. On a laptop, ask the user before running it.
 #
 # Checks:
 #  1. reversibility: integrating +τ then -τ returns U and H
@@ -90,6 +90,7 @@ end
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("colors", "lattice", "mutation", "ntraj", "seed", "therm", "workdir"))
     colors = getarg(a, "colors", 3)
     lattice = getarg(a, "lattice", (4, 4, 4, 4))
     ntraj = getarg(a, "ntraj", 300)

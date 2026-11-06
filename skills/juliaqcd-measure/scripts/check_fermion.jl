@@ -107,6 +107,7 @@ end
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("colors", "csw", "kappa", "lattice", "mutation", "seed", "workdir"))
     N = getarg(a, "colors", 3)
     L = getarg(a, "lattice", (4, 4, 4, 6))
     κ = getarg(a, "kappa", 0.11)

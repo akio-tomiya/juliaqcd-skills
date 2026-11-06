@@ -151,6 +151,7 @@ end
 
 function main(args)
     a = parse_args(args)
+    check_keys(a, ("colors", "lattice", "mutation", "seed", "workdir"))
     colors = getarg(a, "colors", 3)
     lattice = getarg(a, "lattice", (4, 4, 4, 4))
     seed = getarg(a, "seed", 2024)
