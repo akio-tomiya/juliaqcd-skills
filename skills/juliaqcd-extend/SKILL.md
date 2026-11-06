@@ -40,11 +40,32 @@ julia scripts/selftest.jl             # all groups pass, broken groups fail
 
 Each check prints PASS or FAIL, and the exit code is nonzero on failure. The
 checks cover the generators (count, normalization, closure), the exponential
-map, membership, projection (idempotent, nearest, stable), and Haar random
-elements, including the Frobenius–Schur indicator that confirms the declared
-kind of representation. The full self-test takes about a minute on a laptop.
+map, membership, projection (idempotent, nearest, stable), the invariant
+bilinear forms, and Haar random elements, including the Frobenius–Schur
+indicator. The scripts need only the Julia standard library (no
+`--project`). One group takes 10 to 20 seconds and under 1 GB of memory;
+the full self-test takes about a minute. Run from the skill folder, or give
+the full path to the script.
 
-To add a group, follow "Adding a group" in `references/groups.md`.
+To answer "is this group complex, real, or pseudo-real?", report the
+measured values, not only PASS: PASS says the result agrees with the kind
+the code declares. The line "invariant bilinear forms" is exact (none,
+one symmetric, or one antisymmetric form, from the Lie algebra alone), and
+the line "Haar: E[tr U^2]" gives the measured indicator with its error.
+
+To add a group, follow "Adding a group" in `references/groups.md`. For
+SO(N), first settle which theory the user means (lattice SO(N), SU(N)/Z_N,
+or a fermion representation); `references/groups.md` lists the options.
+
+Whether Wilsonloop, the Gaugefields HMC parts, and the QCDMeasurements
+normalizations accept real element types is not documented. Test each part
+on a small lattice with the reference implementation before putting it in
+the table of reusable parts.
+
+When nothing in JuliaQCD can generate the configurations yet (no SO(N)
+update exists), the common workflow stops after the settings table and the
+plan: present the table of parts, the missing pieces, and the tests the
+new code must pass, and ask the user before writing the package.
 
 ## Planned
 

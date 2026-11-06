@@ -18,3 +18,5 @@ jobs:
           version: ${{ matrix.julia }}
       - name: Group checks and self-test
         run: julia skills/juliaqcd-extend/scripts/selftest.jl
+      - name: Monitor self-test on synthetic histories
+        run: julia skills/juliaqcd-generate/scripts/selftest_monitor.jl

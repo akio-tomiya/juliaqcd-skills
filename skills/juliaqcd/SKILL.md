@@ -5,15 +5,15 @@ description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefiel
 
 # JuliaQCD
 
-Status: skeleton (v0.0.1). Only the gauge-group part of `juliaqcd-extend` is written; the other sub-skills are placeholders.
+Status: v0.0.1. Written and tested: pure-gauge HMC and its monitoring (`juliaqcd-generate`), and the gauge-group reference implementation (`juliaqcd-extend`). The other sub-skills are placeholders.
 
 ## Common workflow
 
-Every request follows these four steps, in this order.
+Every request that runs a simulation or a measurement follows these four steps, in this order. A question that needs no lattice (for example a property of a group) skips them and goes straight to the matching check.
 
-1. Show a settings table: group, dimension, lattice size, action and couplings, boundary conditions, algorithm, number of configurations, seed. Each entry carries its source (the user's message, a paper with page and equation number, or a default). Leave an entry blank and ask when it cannot be read off; never fill it in by guessing.
-2. Run a small lattice first.
-3. Pass the verification checks for the case at hand (see `juliaqcd-extend` for the checks by group type).
+1. Show a settings table. For generation: group, dimension, lattice size, action and couplings, boundary conditions, algorithm, number of configurations, seed. For measurements: input ensemble (path, format, number of configurations), operator and its parameters (mass or κ, fermion boundary conditions, smearing), and exactly what to compute (which observable, which eigenvalues and how many, flow times, source positions). Each entry carries its source (the user's message, a paper with page and equation number, or a default). Physics parameters (group, dimension, lattice size, couplings, masses, boundary conditions, input ensemble) must come from the user or a paper: leave them blank and ask, never fill them in by guessing. Algorithmic parameters (number of MD steps, trajectory length, seed, start, length of a trial run) may take a default, marked "default" in the table.
+2. Run a small lattice first. The checks choose their own couplings, so they can run before the user has given the production values.
+3. Pass the verification checks for the case at hand: `check_hmc.jl` in `juliaqcd-generate` for HMC, `check_group.jl` in `juliaqcd-extend` for a gauge-group implementation.
 4. Show the cost estimate (hours, memory, disk, number of configurations) and get the user's approval before any production run or job submission.
 
 Do not run heavy jobs on a laptop. Do not overwrite existing configurations.
@@ -29,9 +29,15 @@ Do not run heavy jobs on a laptop. Do not overwrite existing configurations.
 | Figures and visualization | `juliaqcd-visualize` |
 | Reproduce an ILDG ensemble or an arXiv paper | `juliaqcd-reproduce` |
 | New group, action, smearing, operator, flow; change dimension or group | `juliaqcd-extend` |
+| Properties of a gauge group (kind of representation, generators, invariant tensors) | `juliaqcd-extend` (`check_group.jl`, `references/groups.md`) |
+
+The scripts of one skill may load files from another (for example
+`check_hmc.jl` loads `juliaqcd-extend/scripts/GaugeGroups.jl` by relative
+path). When copying scripts to another machine, copy the whole `skills`
+folder.
 
 ## Scope
 
-Only JuliaQCD v1 and later, on the standard path built on LatticeMatrices.jl and JACC. If the user pastes code written for v0.6 or earlier, translate it to the v1 API instead of running it as is.
+Only JuliaQCD v1 and later, on the standard path built on LatticeMatrices.jl and JACC. If the user pastes code written for v0.6 or earlier, translate it with `references/legacy-api.md` instead of running it as is.
 
-Before claiming that a feature exists, check it against the feature map (to be added as `references/feature-map.md`, regenerated for each release). If it is not in the map, say so and route to `juliaqcd-extend`.
+Before claiming that a feature exists, check it against `references/feature-map.md` (versions, what each package provides, and what is not available). If it is not in the map, say so and route to `juliaqcd-extend`.

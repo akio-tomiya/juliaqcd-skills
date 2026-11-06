@@ -20,7 +20,7 @@ export GaugeGroup, SU, SO, Sp, G2,
     RepKind, ComplexRep, RealRep, PseudoRealRep,
     repkind, frobenius_schur_indicator,
     matrix_size, field_type, algebra_dimension, invariant_tensors,
-    generators, constraints, project_algebra, expmap,
+    generators, constraints, project_algebra, expmap, invariant_bilinear_forms,
     ingroup_residual, project_group, random_element,
     run_checks, print_checks
 
@@ -257,6 +257,31 @@ end
 "Exponential map from the Lie algebra to the group."
 expmap(::GaugeGroup, X) = exp(X)
 
+"""
+    invariant_bilinear_forms(G)
+
+Basis of the bilinear forms B with Uᵀ B U = B for all U in `G`, found as the
+null space of Tₐᵀ B + B Tₐ = 0 over the generators, and the symmetry of each
+(`:symmetric`, `:antisymmetric`, or `:mixed`). For an irreducible
+representation this decides the kind exactly, independently of `repkind`:
+no form for complex, one symmetric form for real, one antisymmetric form for
+pseudo-real.
+"""
+function invariant_bilinear_forms(G::GaugeGroup)
+    n = matrix_size(G)
+    Id = Matrix{ComplexF64}(I, n, n)
+    A = reduce(vcat, [kron(Id, transpose(T)) + kron(transpose(T), Id) for T in generators(G)])
+    basis = nullspace(A)
+    forms = [reshape(basis[:, k], n, n) for k in axes(basis, 2)]
+    kind(B) = norm(B - transpose(B)) < 1e-8 * norm(B) ? :symmetric :
+              norm(B + transpose(B)) < 1e-8 * norm(B) ? :antisymmetric : :mixed
+    return [(form=B, symmetry=kind(B)) for B in forms]
+end
+
+expected_forms(::ComplexRep) = Symbol[]
+expected_forms(::RealRep) = [:symmetric]
+expected_forms(::PseudoRealRep) = [:antisymmetric]
+
 # ---------------------------------------------------------------------------
 # Group membership and projection
 
@@ -369,9 +394,12 @@ end
     random_element(rng, G)
 
 Haar-distributed element of `G`. SU(N) and SO(N) use the QR decomposition of
-a Gaussian matrix; other groups use a random walk exp(X₁)⋯exp(X_K) with
-Gaussian X_k in the Lie algebra, which converges to Haar measure. Check the
-result with `run_checks`.
+a Gaussian matrix, which is exactly Haar. Other groups use a random walk
+exp(X₁)⋯exp(X_K) with Gaussian X_k in the Lie algebra. The walk converges to
+Haar measure exponentially in K on a compact connected group, but the number
+of steps (40 at width 1.5) is a choice, validated only by the moment checks
+in `run_checks` (⟨tr U⟩, ⟨|tr U|²⟩, ⟨tr U²⟩). Use more steps if a result
+depends on higher moments.
 """
 random_element(rng::AbstractRNG, G::GaugeGroup) = random_walk(rng, G)
 
@@ -431,8 +459,15 @@ define `matrix_size`, `field_type`, `algebra_dimension`, `repkind`, and
 - exponential map, products, and inverses stay in the group;
 - projection: in the group, idempotent, nearest point, stable under
   perturbation;
+- invariant bilinear forms: found exactly from the generators and compared
+  with `repkind(G)` (none, one symmetric, or one antisymmetric);
 - Haar random elements: in the group, E[tr U] = 0, E[|tr U|²] = 1, and
   E[tr U²] equal to the Frobenius–Schur indicator of `repkind(G)`.
+
+The two kind checks are independent: the forms come from the Lie algebra
+alone, the indicator from Monte Carlo over the group. To determine the kind
+of a group without trusting the declaration, read the forms line and the
+measured mean on the indicator line, not only PASS.
 """
 function run_checks(G::GaugeGroup; rng=Xoshiro(1234), nsamples=20000)
     T = field_type(G)
@@ -452,6 +487,12 @@ function run_checks(G::GaugeGroup; rng=Xoshiro(1234), nsamples=20000)
         maximum(maximum(abs, constraints(G, A); init=0.0) for A in gens), tol))
     push!(results, check("algebra closed under [Ta, Tb]",
         maximum(norm((A * B - B * A) - project_algebra(G, A * B - B * A)) for A in gens, B in gens), tol))
+
+    forms = invariant_bilinear_forms(G)
+    found = sort([f.symmetry for f in forms])
+    push!(results, CheckResult("invariant bilinear forms: $(isempty(found) ? "none" : join(found, ", ")) " *
+                               "(declared $(nameof(typeof(repkind(G)))))",
+        length(found), length(expected_forms(repkind(G))), found == expected_forms(repkind(G))))
 
     rand_alg(scale) = sum(scale * randn(rng) * Ta for Ta in gens)
     push!(results, check("exp(algebra) in group",

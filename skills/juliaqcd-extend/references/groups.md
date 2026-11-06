@@ -24,6 +24,43 @@ Note on naming: `Sp(n)` in `GaugeGroups.jl` takes the matrix size n = 2N, so
 `Sp(4)` is USp(4) (also written Sp(2)). State the convention whenever you
 write Sp.
 
+## Center
+
+The center decides whether the Polyakov loop in the defining
+representation can be an order parameter for confinement.
+
+| Group | Center |
+|---|---|
+| SU(N) | Z_N |
+| SO(N), N odd | trivial |
+| SO(N), N even | Z₂ |
+| Sp(2N) | Z₂ |
+| G₂ | trivial |
+
+With a trivial center, gluons screen the defining-representation charge,
+and the Polyakov loop is nonzero in both phases.
+
+## Which "SO(3)" the user means
+
+"SO(3) gauge theory" can mean different theories. Ask before building
+anything.
+
+- Lattice SO(3): real 3×3 orthogonal links and the Wilson action. The
+  same theory can be written with SU(2) links and an action in the adjoint
+  representation. It has a first-order bulk transition at strong coupling
+  (Greensite and Lautrup, Phys. Rev. Lett. 47 (1981) 9; Bhanot and Creutz,
+  Phys. Rev. D 24 (1981) 3212), so the continuum limit is on the
+  weak-coupling side of it.
+- SU(2)/Z₂: SU(2) links with a Z₂ 2-form gauge field. The local dynamics
+  are those of SU(2); the global structure (flux sectors, θ periodicity,
+  allowed line operators) differs. Gaugefields has Z(N) 2-form fields and a
+  dynamical B field for SU(N)/Z(N) in 4D; check its documentation for which
+  ensemble it samples before using it for this.
+- With fermions in the vector representation of SO(3), which is the
+  adjoint representation of SU(2): a new Dirac operator is needed.
+
+The same question arises for SO(N) and SU(N)/Z_N in general.
+
 ## What the kind changes in physics
 
 These are textbook statements for fermions in the defining representation.
