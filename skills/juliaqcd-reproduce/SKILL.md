@@ -7,6 +7,10 @@ description: "Reproduce a published lattice result or read an ILDG ensemble with
 
 Status: placeholder. Not written yet.
 
+## When this skill is called
+
+Tell the user that this skill is not written yet: reading ILDG files and the three gates below are not automated or tested. Follow the common workflow of the `juliaqcd` skill, and take the settings table from the paper with page and equation numbers. For a pure-gauge result that `juliaqcd-generate` and `juliaqcd-measure` cover, generate the ensemble with the paper's settings and compare one number from the paper before measuring anything new.
+
 ## Planned scope
 
 - Configuration gate: metadata matches the file, plaquette matches

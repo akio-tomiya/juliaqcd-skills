@@ -54,6 +54,10 @@ Compiling JuliaQCD takes about 1.5 GB of memory. Run the checks and the simulati
 
 Julia 1.11 and 1.12, JuliaQCD v1 and later (Gaugefields 1.1.10 and later, and so on; see `skills/juliaqcd/references/feature-map.md`). Code written for v0.6 or earlier is translated with `skills/juliaqcd/references/legacy-api.md`, not run as is.
 
+## Reporting problems
+
+Open an issue at https://github.com/akio-tomiya/juliaqcd-skills/issues, in English or Japanese. Please include the request you gave the agent, the Julia and package versions (the `Manifest.toml` of the environment), and the output of the check that failed. A bug in a JuliaQCD package itself belongs to that package's repository; if you are not sure which it is, report it here.
+
 ## Citation
 
 If you use JuliaQCD, cite arXiv:2409.03030.

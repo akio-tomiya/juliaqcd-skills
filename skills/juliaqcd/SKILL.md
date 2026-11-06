@@ -1,6 +1,6 @@
 ---
 name: juliaqcd
-description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefields.jl, LatticeDiracOperators.jl, QCDMeasurements.jl, LatticeMatrices.jl, Wilsonloop.jl, LatticeQCD.jl), v1 and later. Use when the user wants to generate gauge configurations, measure observables, analyze lattice data, reproduce a paper or an ILDG ensemble, change the gauge group or the dimension, or develop a new group, action, operator, or flow in Julia. Routes the request to the matching juliaqcd-* skill and enforces the common workflow (settings table, small-lattice trial, verification, approval before production)."
+description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefields.jl, LatticeDiracOperators.jl, QCDMeasurements.jl, LatticeMatrices.jl, Wilsonloop.jl, LatticeQCD.jl), v1 and later. Use when the user wants to generate gauge configurations, measure observables, analyze lattice data, reproduce a paper or an ILDG ensemble, change the gauge group or the dimension, or develop a new group, action, operator, or flow in Julia, or when code written for an old version (v0.6 or earlier, for example an UndefVarError for an old function name) must be translated to v1. Tested so far: pure-gauge generation and measurement and gauge-group checks; fermions are not covered yet. Routes the request to the matching juliaqcd-* skill and enforces the common workflow (settings table, small-lattice trial, verification, approval before production)."
 ---
 
 # JuliaQCD
@@ -41,3 +41,5 @@ folder.
 Only JuliaQCD v1 and later, on the standard path built on LatticeMatrices.jl and JACC. If the user pastes code written for v0.6 or earlier, translate it with `references/legacy-api.md` instead of running it as is.
 
 Before claiming that a feature exists, check it against `references/feature-map.md` (versions, what each package provides, and what is not available). If it is not in the map, say so and route to `juliaqcd-extend`.
+
+Fermions (dynamical-fermion HMC, Dirac operators, propagators, eigenvalues) are in JuliaQCD (see the map) but not yet in these skills. Tell the user that no tested procedure or verification script exists here for them. If they still want to go ahead, follow the common workflow, check every API against the map and the package documentation, and present the results as unverified by this skill set.

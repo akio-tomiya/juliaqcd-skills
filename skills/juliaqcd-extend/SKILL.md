@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-extend
-description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, or flow, or a change of dimension. Use when the request goes beyond what JuliaQCD v1 provides. Reuse existing parts, keep the extension portable, and write tests."
+description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, or flow, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 provides, and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Reuse existing parts, keep the extension portable, and write tests."
 ---
 
 # juliaqcd-extend
