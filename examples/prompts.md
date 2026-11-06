@@ -109,3 +109,31 @@ Expected:
 Tested: pass. Said Wilson only, pointed to `eigensystem`, and left the
 call signature open rather than guessing it. `juliaqcd-measure` is still a
 placeholder, so the answer came from the feature map alone.
+
+## 7. Measure the scale and the potential
+
+> I generated SU(3) pure-gauge configurations at β = 5.7 on a 6^4 lattice
+> with the juliaqcd-generate scripts; the run directory is runs/su3_b57.
+> Compute t0 and w0 from the gradient flow and the static potential from
+> Wilson loops, with errors.
+
+Expected:
+- reads the run's `meta.toml` and runs `monitor.jl` before measuring;
+- runs `check_measure.jl` with the group and dimension of the ensemble;
+- measures the cost on a few configurations, then the whole ensemble;
+- reports t0/a² and w0/a with binned errors, a V(R) by T, the Creutz
+  ratios, and every WARN;
+- gives no lattice spacing in fm unless the user supplies √t0 in fm.
+
+Tested: pass. The monitor gave no FAIL, `check_measure.jl` passed all 11
+checks (24 s, 1.5 GB), and the 117 configurations took 5 minutes. Since
+the bin was capped, the agent quoted t0/a² = 1.04 ± 0.10 and w0/a = 1.01
+± 0.07 from the largest bin, called a V(R) at T = 2 an upper estimate,
+and asked for √t0 in fm instead of choosing one. Its feedback found that
+`check_measure.jl` crashed when `workdir=` did not exist yet, that the
+skill described a warning the script never printed, and that the skill
+did not say which error to quote when the bin is capped or that V(R) is
+not fitted. The check scripts now create the directory, the analysis
+warns on the clover–plaquette gap of t0 and on a V(R) without a plateau,
+prints a bin table for the potential, and writes runs with `bin=` to a
+separate file.

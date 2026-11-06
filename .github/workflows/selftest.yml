@@ -20,3 +20,5 @@ jobs:
         run: julia skills/juliaqcd-extend/scripts/selftest.jl
       - name: Monitor self-test on synthetic histories
         run: julia skills/juliaqcd-generate/scripts/selftest_monitor.jl
+      - name: Analysis self-test on synthetic data
+        run: julia skills/juliaqcd-measure/scripts/selftest_analysis.jl

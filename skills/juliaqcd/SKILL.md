@@ -5,7 +5,7 @@ description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefiel
 
 # JuliaQCD
 
-Status: v0.0.1. Written and tested: pure-gauge HMC and its monitoring (`juliaqcd-generate`), and the gauge-group reference implementation (`juliaqcd-extend`). The other sub-skills are placeholders.
+Status: v0.0.1. Written and tested: pure-gauge HMC and its monitoring (`juliaqcd-generate`), pure-gauge measurements with the gradient flow, t0, w0, Wilson loops, and the potential (`juliaqcd-measure`), and the gauge-group reference implementation (`juliaqcd-extend`). The other sub-skills are placeholders.
 
 ## Common workflow
 
@@ -13,7 +13,7 @@ Every request that runs a simulation or a measurement follows these four steps, 
 
 1. Show a settings table. For generation: group, dimension, lattice size, action and couplings, boundary conditions, algorithm, number of configurations, seed. For measurements: input ensemble (path, format, number of configurations), operator and its parameters (mass or κ, fermion boundary conditions, smearing), and exactly what to compute (which observable, which eigenvalues and how many, flow times, source positions). Each entry carries its source (the user's message, a paper with page and equation number, or a default). Physics parameters (group, dimension, lattice size, couplings, masses, boundary conditions, input ensemble) must come from the user or a paper: leave them blank and ask, never fill them in by guessing. Algorithmic parameters (number of MD steps, trajectory length, seed, start, length of a trial run) may take a default, marked "default" in the table.
 2. Run a small lattice first. The checks choose their own couplings, so they can run before the user has given the production values.
-3. Pass the verification checks for the case at hand: `check_hmc.jl` in `juliaqcd-generate` for HMC, `check_group.jl` in `juliaqcd-extend` for a gauge-group implementation.
+3. Pass the verification checks for the case at hand: `check_hmc.jl` in `juliaqcd-generate` for HMC, `check_measure.jl` in `juliaqcd-measure` for measurements and the flow, `check_group.jl` in `juliaqcd-extend` for a gauge-group implementation.
 4. Show the cost estimate (hours, memory, disk, number of configurations) and get the user's approval before any production run or job submission.
 
 Do not run heavy jobs on a laptop. Do not overwrite existing configurations.

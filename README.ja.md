@@ -4,9 +4,10 @@
 
 Julia の格子ゲージ理論のパッケージ群 [JuliaQCD](https://github.com/akio-tomiya/LatticeQCD.jl)（v1 以降）を、Claude Code や Codex から使うためのスキル集です。
 
-まだ作り始めたばかりの版です。今は次の 2 つが動き、試験も済んでいます。ほかのスキルは名前と予定の範囲だけで、中身はこれから書きます。
+まだ作り始めたばかりの版です。今は次の 3 つが動き、試験も済んでいます。ほかのスキルは名前と予定の範囲だけで、中身はこれから書きます。
 
 - 純ゲージの HMC と、生成の質の監視（`juliaqcd-generate`）
+- 純ゲージの測定。グラディエントフローと t0・w0、Wilson ループと静的ポテンシャル（`juliaqcd-measure`）
 - ゲージ群の参照実装と検査（`juliaqcd-extend`）
 
 ## 何をするものか
@@ -25,6 +26,8 @@ Julia の格子ゲージ理論のパッケージ群 [JuliaQCD](https://github.co
 4. 時間・メモリ・ディスクの見積もりを見せ、了承を得てから本番を走らせます。
 
 スキルの中心は、コードの書き方よりも確かめ方にあります。たとえば純ゲージの HMC では、可逆性、ΔH が刻み幅の 2 乗で小さくなること、リンクが SU(N) に留まること、β = 0・強結合・弱結合での既知の値を、本番の前に小さな格子で確かめます。受理率がよく ⟨exp(−ΔH)⟩ = 1 でも、意図した β の分布を作っているとは限りません。それを示せるのは既知の値との比較だけです。
+
+測定では、JuliaQCD の出す数をすべて、配列だけで書いた別の実装と同じリンクの上で突き合わせます。2 次元では厳密に W(R,T) = u(β)^{RT} が成り立つので、生成から測定までを通してこの値が出ることも確かめています。
 
 検査そのものも、わざと壊したコードで落ちることを確かめています（`selftest*.jl`）。
 
@@ -55,7 +58,7 @@ Codex では、`skills/` の下のフォルダを Codex のスキルのフォル
 JuliaQCD の環境は、スキルの指示に従って一度作れば、あとは使い回せます。
 
 ```
-julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2"])'
+julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2", "Wilsonloop"])'
 ```
 
 ## 例のプロンプト

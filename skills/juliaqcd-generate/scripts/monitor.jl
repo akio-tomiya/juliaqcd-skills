@@ -25,7 +25,17 @@ function main(args)
     statuses = String[]
 
     plaq = h["plaquette"]
-    if haskey(opts, "therm")
+    # A chain that accepts nothing has a constant plaquette, whose two halves
+    # agree trivially; judge that first, so that thermalization cannot PASS.
+    nacc = Int(sum(h["accepted"][n÷2+1:end]))
+    moving = nacc > 0
+    push!(statuses, report(moving ? "PASS" : "FAIL", "chain moves",
+        moving ? "$nacc of $(n - n ÷ 2) accepted in the second half" :
+        "no trajectory accepted in the second half; the chain is stuck (more steps, or start=cold)"))
+    if !moving
+        report("--", "thermalization", "not judged: the chain does not move")
+        cut = n ÷ 2
+    elseif haskey(opts, "therm")
         cut = parse(Int, opts["therm"])
         report("--", "thermalization", "drop first $cut trajectories (given)")
     else

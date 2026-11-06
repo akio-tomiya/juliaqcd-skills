@@ -31,6 +31,7 @@ include(joinpath(@__DIR__, "common.jl"))
 include(joinpath(@__DIR__, "stats.jl"))
 include(joinpath(@__DIR__, "..", "..", "juliaqcd-extend", "scripts", "GaugeGroups.jl"))
 using .GaugeGroups
+include(joinpath(@__DIR__, "known_values.jl"))
 
 const RESULTS = Tuple{String,Bool,String}[]
 
@@ -87,23 +88,6 @@ function chain(lattice, colors, beta; start=:hot, ntraj, therm, steps, tau=1.0, 
     return (; U, plaq, emdH, acceptance=acc / (ntraj - therm))
 end
 
-"One-link expectation <Re tr U / N> with weight exp((β/N) Re tr U), by Haar Monte Carlo."
-function one_link_u(colors, beta; samples=400_000, rng=Xoshiro(42))
-    G = SU(colors)
-    x = Vector{Float64}(undef, samples)
-    w = similar(x)
-    for i in 1:samples
-        t = real(tr(random_element(rng, G))) / colors
-        x[i] = t
-        w[i] = exp(beta * t)
-    end
-    W = sum(w) / samples
-    u = sum(x .* w) / sum(w)
-    # delta-method error of a ratio estimator
-    err = sqrt(sum(abs2, w .* (x .- u)) / samples / samples) / W
-    return u, err
-end
-
 function main(args)
     a = parse_args(args)
     colors = getarg(a, "colors", 3)
@@ -111,7 +95,7 @@ function main(args)
     ntraj = getarg(a, "ntraj", 300)
     therm = getarg(a, "therm", 50)
     seed = getarg(a, "seed", 1234)
-    workdir = getarg(a, "workdir", mktempdir())
+    workdir = mkpath(getarg(a, "workdir", mktempdir()))
     MUTATION[] = getarg(a, "mutation", "none")
     MUTATION[] == "none" || println("!! mutation = ", MUTATION[], " (deliberately broken)")
     N = colors

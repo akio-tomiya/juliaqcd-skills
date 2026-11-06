@@ -20,7 +20,7 @@ function ar1(rng, n, r; mean=0.0, sd=1.0)
     return mean .+ sd .* x
 end
 
-function write_history(dir; n=2000, drift=false, bias=0.0, frozen=false, seed=1)
+function write_history(dir; n=2000, drift=false, bias=0.0, frozen=false, stuck=false, seed=1)
     rng = Xoshiro(seed)
     mkpath(dir)
     plaq = ar1(rng, n, 0.6; mean=0.55, sd=0.002)
@@ -30,6 +30,11 @@ function write_history(dir; n=2000, drift=false, bias=0.0, frozen=false, seed=1)
     s = 0.3
     dH = s .* randn(rng, n) .+ s^2 / 2 .- bias
     acc = [rand(rng) < min(1, exp(-d)) for d in dH]
+    if stuck                                                   # nothing accepted after a hot start
+        plaq .= 0.002
+        dH .= 7.5 .+ 0.5 .* randn(rng, n)
+        acc .= false
+    end
     Q = fill(NaN, n)
     qtrue = frozen ? fill(1.0, n ÷ 10) : round.(ar1(rng, n ÷ 10, 0.3; sd=2.0))
     for (j, k) in enumerate(10:10:n)
@@ -55,10 +60,11 @@ status_of(lines, item) = (l = findfirst(l -> occursin(item, l), lines);
 function main()
     root = mktempdir()
     cases = [
-        ("healthy", (;), [("RESULT", "RESULT:"), ("<exp(-dH)> = 1", "PASS"), ("topological charge", "PASS"), ("thermalization", "PASS")]),
+        ("healthy", (;), [("RESULT", "RESULT:"), ("<exp(-dH)> = 1", "PASS"), ("topological charge", "PASS"), ("thermalization", "PASS"), ("chain moves", "PASS")]),
         ("energy bias", (; bias=0.1), [("<exp(-dH)> = 1", "FAIL")]),
         ("frozen topology", (; frozen=true), [("topological charge", "WARN")]),
         ("drifting plaquette", (; drift=true), [("thermalization", "WARN")]),
+        ("stuck chain", (; stuck=true), [("chain moves", "FAIL"), ("thermalization", "--")]),
     ]
     ok = true
     for (name, kw, expect) in cases

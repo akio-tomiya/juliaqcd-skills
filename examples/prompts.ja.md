@@ -57,3 +57,14 @@
 - QCDMeasurements の固有値の測定は Wilson だけに対応していると言います。
 - 代わりに LatticeDiracOperators の `eigensystem` を示します。
 - staggered 用の QCDMeasurements の設定を作り話で書きません。
+
+## 7. スケールとポテンシャルを測る
+
+> juliaqcd-generate の台本で、SU(3) の純ゲージの配位を β = 5.7、6⁴ の格子で作った。置き場は runs/su3_b57。グラディエントフローから t0 と w0 を、Wilson ループから静的ポテンシャルを、誤差付きで求めて。
+
+すべきこと：
+- 測る前に、その置き場の `meta.toml` を読み、`monitor.jl` を走らせます。
+- 配位と同じ群と次元で `check_measure.jl` を走らせます。
+- 数個の配位で時間を測ってから、全体を測ります。
+- t0/a² と w0/a をビンを取った誤差付きで、T ごとの a V(R)、Creutz 比、すべての WARN とともに報告します。
+- 利用者が √t0 の fm での値を示さない限り、格子間隔を fm で出しません。

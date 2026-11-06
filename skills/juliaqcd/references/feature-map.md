@@ -76,6 +76,15 @@ Higher packages depend on lower ones.
   | Chiral condensate | Wilson, staggered |
   | Eigenvalues of D (`EigenvalueMeasurement`) and of M†M (`MdagMSpectrumMeasurement`) | Wilson only (Arpack) |
 
+  Dimension limits, checked with QCDMeasurements 1.0.1:
+  `WilsonLoopMeasurement` works in 4D only (in 2D and 3D its constructor
+  throws, and its normalization assumes three spatial directions);
+  `GradientFlowScaleMeasurement` and the topological charge are 4D only.
+  `estimate_flow_scales` gives leave-one-out jackknife errors without
+  binning, too small for autocorrelated configurations.
+  `juliaqcd-measure` covers Wilson loops and the flow energy density in any
+  dimension, with binned errors.
+
 - **LatticeQCD.jl**: wraps Wilsonloop, Gaugefields, LatticeDiracOperators,
   and QCDMeasurements. Interactive setup with `run_wizard()`. 4D only.
   Domain wall (Shamir, Möbius) is experimental. SLHMC and measurement-only

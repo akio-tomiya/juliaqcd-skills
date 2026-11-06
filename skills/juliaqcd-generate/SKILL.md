@@ -22,7 +22,7 @@ written yet.
    and can run while waiting for the answer.
 2. Set up an environment once and keep its Manifest.toml with the results:
    ```
-   julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2"])'
+   julia --project=env -e 'using Pkg; Pkg.add(["Gaugefields", "JACC", "QCDMeasurements", "StableRNGs", "JLD2", "Wilsonloop"])'
    ```
 3. Run the checks on a small lattice with the same group and dimension:
    ```
@@ -55,6 +55,13 @@ written yet.
    acceptance. Measured with τ = 1 and 20 steps: acceptance 0.96 on 4⁴
    SU(3) at β = 5.67, and 0.98 on 4³ SU(4) at β = 10.08, more than needed
    on such small lattices. Aim for 0.7 to 0.9 and adjust after a short run.
+
+   Far from equilibrium the force is large, so a hot start can need more
+   steps than the equilibrium run. Measured on 6⁴ SU(3) at β = 5.7: a hot
+   start with 20 steps accepted none of 400 trajectories (ΔH ≈ 7.5) and
+   never left its start; a cold start with 30 steps had acceptance 0.94.
+   The monitor reports a stuck chain as FAIL ("chain moves"). Start cold,
+   or thermalize with more steps.
 6. Check the run before measuring anything:
    ```
    julia scripts/monitor.jl runs/NAME
@@ -117,6 +124,7 @@ For 4⁴ SU(3), `check_hmc.jl` takes about 2 minutes on one core and about
 
 | Item | PASS when | If not |
 |---|---|---|
+| chain moves | some trajectory accepted in the second half | the chain is stuck at its start: more steps, or `start=cold` |
 | thermalization | after the cut, the two halves agree within 3σ | run longer |
 | acceptance | between 0.6 and 0.95 | change `steps` |
 | ⟨exp(−ΔH)⟩ = 1 | within 3σ (FAIL beyond 5σ) | find the bug before anything else |
