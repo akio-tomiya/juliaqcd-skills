@@ -1,7 +1,12 @@
 # Example prompts
 
 Prompts a new user can type after installing the skills, with what the agent
-should do. The "Tested" line records the result of a run on 2026-11-06.
+should do. The "Tested" line of examples 1 to 6 records a run on
+2026-11-06, with computations. Examples 7 to 24 were tested on 2026-11-09
+for behavior only, in the trigger-test setting described below: the agent
+had no shell, so it ran no computation, and its questions went unanswered.
+The folder was empty, except in example 18, where it held a made-up
+interrupted run (parameters, a history, and placeholder checkpoints).
 
 How they were tested: an agent with no other context was told to act as
 Claude Code with this plugin installed, given a copy of the plugin without
@@ -15,7 +20,7 @@ configuration with only this plugin installed, no user instructions, and
 an empty folder. Each prompt was sent once with `claude -p`, with shell
 and file-writing tools disabled, and the skills the agent invoked were
 recorded. All 17 lattice prompts invoked a `juliaqcd` skill that fits
-the request: the seven below and ten others in English and Japanese, such
+the request: examples 1 to 6 and eleven others in English and Japanese, such
 as a beginner's first step, low HMC acceptance, an error from
 `run_wizard()`, ILDG files, the Iwasaki action, GPUs and MPI, and meson
 correlators. None of four unrelated prompts (a Python function, building
@@ -78,21 +83,7 @@ the sum (4608 for a cold 4⁴ SU(3) field) while `measure_plaquette` is
 normalized, so a name-for-name translation silently changes the number.
 The table now says so, with `normalize=false` for the old value.
 
-## 4. Kind of representation of a group
-
-> Is the 7-dimensional representation of G2 complex, real, or pseudo-real?
-> Show me numerically.
-
-Expected:
-- answers real;
-- runs `check_group.jl G2` and points at the Frobenius–Schur line,
-  ⟨tr U²⟩ ≈ +1.
-
-Tested: pass. Answered real, with ⟨tr U²⟩ = +1.006 ± 0.012 from
-`check_group.jl G2`. Its feedback (PASS only confirms the declared kind)
-led to the exact check by invariant bilinear forms.
-
-## 5. A gauge group JuliaQCD does not have
+## 4. A gauge group JuliaQCD does not have
 
 > I want to simulate SO(3) gauge theory with JuliaQCD. What do I need?
 
@@ -108,7 +99,7 @@ was meant. It pointed out that "SO(3)" can mean lattice SO(3), SU(2)/Z₂,
 or SU(2) with adjoint fermions, and that the center matters for the
 Polyakov loop; both are now in `references/groups.md`.
 
-## 6. A feature that is not there
+## 5. A feature that is not there
 
 > Measure the eigenvalues of the staggered Dirac operator with
 > QCDMeasurements.
@@ -124,7 +115,7 @@ Tested: pass. Said Wilson only, pointed to `eigensystem`, and left the
 call signature open rather than guessing it. `juliaqcd-measure` is still a
 placeholder, so the answer came from the feature map alone.
 
-## 7. Measure the scale and the potential
+## 6. Measure the scale and the potential
 
 > I generated SU(3) pure-gauge configurations at β = 5.7 on a 6^4 lattice
 > with the juliaqcd-generate scripts; the run directory is runs/su3_b57.
@@ -151,3 +142,333 @@ not fitted. The check scripts now create the directory, the analysis
 warns on the clover–plaquette gap of t0 and on a V(R) without a plateau,
 prints a bin table for the potential, and writes runs with `bin=` to a
 separate file.
+
+## 7. Implement a method from a paper
+
+> I want the propagator of Neuberger's overlap operator
+> (arXiv:hep-lat/9707022) on quenched SU(3) configurations. Implement it
+> first.
+
+Expected:
+- says that no tested procedure exists here for the overlap operator;
+- splits the request into parts, from the paper's equations with their
+  numbers: the Wilson kernel and the solvers (multishift CG) come from
+  JuliaQCD as they are; only the sign function and the overlap operator
+  type are written;
+- proposes a separate package in the user's project, compatible with
+  JuliaQCD, and the tests it will pass: a dense sign function on a small
+  lattice, the Ginsparg–Wilson relation, γ₅-hermiticity, the free field,
+  gauge covariance, and a broken version that the tests catch;
+- asks for ρ, the quark mass, and the configurations instead of
+  choosing them.
+
+Tested (behavior only): pass after two fixes. The first agent built the
+operator on the plugin's plain-array reference instead of on JuliaQCD,
+and went on writing code after its question went unanswered. The skills
+now say that the plain-array implementations are test oracles only, and
+that an unanswered question is not an approval. The agent then listed
+the parts, the tests above, and the blanks (ρ, the mass, the
+configurations, the sign-function method), and stopped.
+
+## 8. A production run on a workstation
+
+> Run quenched SU(3) HMC with the Wilson action at β = 6.0 on a 16^4
+> lattice, 1000 trajectories, on our workstation ws1 (I can ssh to it).
+> When it is done, show me the plaquette history.
+
+Expected:
+- shows the settings table, with the number of MD steps and the seed
+  marked as defaults, and asks whether the 1000 include thermalization;
+- copies the `skills` folder to ws1 directly and creates the environment
+  there;
+- runs `check_hmc.jl` on 4⁴ and a short trial at β = 6.0 on 16⁴, and
+  shows the cost estimate (hours, memory, disk) before asking for
+  approval;
+- runs the production detached with a log, then `monitor.jl`, and shows
+  the plaquette history with the thermalization cut.
+
+Tested (behavior only): pass. Asked whether the 1000 trajectories include
+thermalization, and laid out the check on 4⁴, a ten-trajectory cost trial
+on 16⁴, the approval, the detached run, `monitor.jl`, and the plaquette
+history.
+
+## 9. A histogram with error bars
+
+> Show me a histogram of the topological charge, with error bars, for the
+> configurations in runs/b60.
+
+Expected:
+- reads the run's `meta.toml` and runs `monitor.jl` first;
+- asks at which flow time and with which definition Q is taken;
+- counts per configuration after the thermalization cut and takes binned
+  jackknife errors with `jackknife` and `choose_bin`, and says which bin
+  was used;
+- labels the counting and the plot as glue code, unverified by this skill
+  set.
+
+Tested (behavior only): pass after a fix. The prompt names neither
+JuliaQCD nor a lattice, and the first agent used no skill. The
+descriptions of `juliaqcd-visualize` and `juliaqcd-measure` now mention
+histograms and the run folders; the agent then used
+`juliaqcd-visualize`, found no `runs/b60`, and asked for the path and for
+the file with Q per configuration.
+
+## 10. The effective mass of the pion
+
+> On quenched SU(3) configurations at β = 5.7 on an 8^3 x 16 lattice,
+> compute the effective mass of the pion with Wilson fermions at κ = 0.15.
+
+Expected:
+- asks for the configurations, or for the number of configurations if
+  they must be generated first;
+- runs `check_fermion.jl` before measuring;
+- measures with `measure_mesons.jl` and analyzes with `analyze_mesons.jl`;
+- reports the plateau of m_eff with its error and Δt range, says that no
+  fit was made, and passes on any WARN about a missing plateau.
+
+Tested (behavior only): pass. Planned `check_hmc.jl` and
+`check_fermion.jl` before anything else, read Wilson fermions as c_SW = 0,
+and asked before running the checks on the laptop. It proposed about 200
+configurations and labeled that as its own proposal.
+
+## 11. The plaquette against the literature
+
+> Measure the average plaquette for β from 5.5 to 6.0 and compare it with
+> the literature.
+
+Expected:
+- asks which paper to compare with, and the lattice size and the β
+  values, instead of quoting plaquette values from memory;
+- runs `check_hmc.jl` first, then one run per β, each checked with
+  `monitor.jl`;
+- compares with the table of the paper, cited by page or table number,
+  and names the differences in volume and statistics.
+
+Tested (behavior only): pass after a fix. The first agent chose the
+lattice size itself after its question went unanswered. With the rule on
+unanswered questions it stopped and asked for the lattice size, the β
+values, the statistics, and the paper.
+
+## 12. The lattice spacing in fm
+
+> Compute t0 on my ensemble in runs/su3_b60 and tell me the lattice spacing
+> in fm.
+
+Expected:
+- measures t0/a² as in example 6;
+- does not take √t0 in fm from memory: asks for the value and the paper
+  it comes from, and then gives a = √t0 / √(t0/a²) with the error of both.
+
+Tested (behavior only): pass. Found no ensemble, laid out the steps of
+example 6, and asked for the path and for the value of √t0 in fm.
+
+## 13. An error that looks too small
+
+> The jackknife error on my plaquette looks too small to me. Is something
+> wrong?
+
+Expected:
+- suspects autocorrelation: an unbinned jackknife underestimates the
+  error on autocorrelated data, as `selftest_analysis.jl` shows;
+- gives τ_int from `gamma_method` and the error against the bin size from
+  `choose_bin` and `jackknife`;
+- says that the plaquette, an average over the whole lattice, can have a
+  genuinely small error;
+- asks for the data, the bin, and the thermalization cut used.
+
+Tested (behavior only): pass. Used `juliaqcd-analyze`, explained both
+possibilities and how to tell them apart (the error grows with the bin
+size, or it stays flat), and asked for the series and the binning.
+
+## 14. Check your own HMC code
+
+> I wrote my own HMC for SU(2) in Julia, but ΔH does not get smaller when I
+> reduce the step size. What should I check?
+
+Expected:
+- gives the tests in order instead of general advice alone: the trajectory
+  length held fixed, the force against a central finite difference of the
+  action, reversibility, rms ΔH ∝ δτ² and ⟨exp(−ΔH)⟩ = 1;
+- points to `check_hmc.jl` as the model and to `GaugeGroups.jl` for exact
+  exponentials;
+- asks for the code and its output before naming a cause.
+
+Tested (behavior only): pass after a fix. The first agent used no skill
+and answered from general knowledge. The description of
+`juliaqcd-extend` now covers checking the user's own code, and the skill
+has a section on it; the agent then used it and gave the tests in this
+order.
+
+## 15. Has it thermalized, is it enough?
+
+> Look at runs/b57/history.csv and tell me whether the run has thermalized
+> and whether I have enough statistics.
+
+Expected:
+- runs `monitor.jl`: the thermalization cut, the acceptance,
+  ⟨exp(−ΔH)⟩, τ_int by the Gamma method, and the number of independent
+  samples;
+- in four dimensions, checks whether Q moves (topology freezing);
+- if the file is not there, asks for it instead of inventing a result.
+
+Tested (behavior only): pass. Found no file, described the checks of
+`monitor.jl`, and asked where the run is.
+
+## 16. Is this configuration broken?
+
+> Is the configuration confs/conf_01000.jld2 broken? Please check it.
+
+Expected:
+- checks that it loads, that the links are in SU(N), that there is no NaN,
+  and that the lattice size matches, and compares the plaquette with the
+  recorded value;
+- if the file is not there, does not call it broken and asks for it.
+
+Tested (behavior only): pass. Found no file, did not call it broken, and
+asked for the path.
+
+## 17. How long will it take?
+
+> How many hours do 1000 trajectories of quenched SU(3) HMC on a 32^4
+> lattice take?
+
+Expected:
+- gives no time from general knowledge: asks for the machine and measures
+  the seconds per trajectory with a short trial;
+- computes the memory (one SU(3) link field on 32⁴ is about 0.6 GB; a run
+  keeps about ten) and the disk from the formula;
+- does not mark β as a default: it is a physics parameter, but the timing
+  trial may use any β, since the time hardly depends on it.
+
+Tested (behavior only): pass after two fixes. The first agent used no
+skill and quoted "several hours" from general knowledge; the description
+of `juliaqcd-generate` now covers questions of time and memory. The
+second agent marked β = 6.0 as a default; the skill now says to keep β
+blank and that the timing trial may use any β. The third left β blank,
+computed the memory (about 6 GB) and the disk (about 12 GB), and gave
+the trial command, but still ended with an hours range from assumed
+seconds per trajectory. The sentence forbidding that range was added
+after this run and is not yet tested.
+
+## 18. Continue a run that stopped
+
+> My run in runs/b60 stopped at trajectory 412. Continue it from where it
+> stopped.
+
+Expected:
+- reads `meta.toml`, `state.toml`, `history.csv`, and `checkpoints/`, and
+  restarts from the last checkpoint with `restart=true`;
+- takes the arguments from `meta.toml` and runs with the same package
+  versions, on the machine where the run started;
+- explains that the trajectories after the checkpoint are regenerated with
+  the same random numbers;
+- finds out from the log why the run stopped, without assuming a cause.
+
+Tested (behavior only): pass after a fix. In an empty folder the agent
+searched for the run until it reached the turn limit, which tests
+nothing, so the test used a made-up run folder. The agent then read the
+files, gave the restart command with the arguments of `meta.toml`, and
+explained that trajectories 401 to 412 are regenerated identically, but
+it guessed that the log's "Killed" meant memory and put the memory of a
+16⁴ run at 3.8 GB (one field is about 38 MB). The skill now gives the
+memory per field for 16⁴ and 32⁴ and says to read the log without
+assuming a cause and to restart with the same package versions on the
+same machine. The second agent did so: it asked the user to confirm the
+environment on ws1 with the recorded versions and whether the stop was a
+one-off, and quoted no memory figure.
+
+## 19. Port your own Fortran code
+
+> I have my own pure-gauge code in Fortran (SU(3), Wilson action, heat
+> bath and overrelaxation). I want to move it to JuliaQCD.
+
+Expected:
+- makes a table of parts and uses `heatbath_updater` from Gaugefields for
+  the heat bath and overrelaxation instead of rewriting them;
+- plans to compare the plaquette with the output of the Fortran code at
+  the same lattice and β;
+- asks for the lattice size, β, and the number of overrelaxation sweeps.
+
+Tested (behavior only): pass. Proposed `heatbath_updater`, made the
+Fortran plaquette the reference, and asked for the lattice, β, and the
+sweep structure.
+
+## 20. The plaquette changed after an update
+
+> After I updated Gaugefields, my plaquette values changed. Why?
+
+Expected:
+- names no cause before comparing: lists the packages whose versions
+  differ between the old and the new `Manifest.toml`;
+- first rules out the normalization change from pre-v1 code
+  (`calculate_Plaquette` returned a sum);
+- runs the same check in both environments with the same seed and lattice,
+  and on one stored configuration; a changed random stream alone leaves
+  the averages the same within errors.
+
+Tested (behavior only): pass after a fix. The first agent assumed the
+pre-v1 normalization change without comparing anything. `juliaqcd-setup`
+now has a procedure for results that change after an update; the agent
+then separated a stored configuration that reads differently from a new
+chain that differs within errors, and compared the Manifests.
+
+## 21. The deconfinement transition from the Polyakov loop
+
+> On an Nt = 4 lattice, scan β and find the deconfinement transition of
+> SU(3) from the Polyakov loop.
+
+Expected:
+- does not quote the transition β from memory: asks for the spatial size,
+  the β range and spacing, and the statistics, or for a paper;
+- runs `check_hmc.jl`, a timing trial, and gets approval, then one run per
+  β;
+- says that the Polyakov loop is recorded in `history.csv` but has no
+  check, so the susceptibility and the peak are unverified glue code.
+
+Tested (behavior only): pass after a fix. The first agent gave the
+transition β from memory "as a guide". The entry skill now lists
+critical couplings and plaquette values among the values not taken from
+memory; the agent then asked for the β window or a paper.
+
+## 22. The string tension
+
+> Compute the string tension from Wilson loops.
+
+Expected:
+- asks for the group, the dimension, the lattice, β, and the ensemble;
+- separates two dimensions, where the string tension is exact
+  (`check_area_law.jl`), from four, where no smearing procedure exists here
+  yet, so the result stops at a V(R) and Creutz ratios.
+
+Tested (behavior only): pass. Made this distinction and asked for the
+parameters.
+
+## 23. The Schwinger model
+
+> I want to run dynamical-fermion simulations of two-dimensional U(1)
+> gauge theory (the Schwinger model).
+
+Expected:
+- says that dynamical fermions have no tested procedure here;
+- lists the parts to write (a two-dimensional Dirac operator, the
+  pseudofermion force) and their tests (a dense matrix, γ₅-hermiticity,
+  the force against a finite difference, reversibility, ΔH ∝ δτ²);
+- asks for the fermion discretization, Nf, the lattice, β, and the mass,
+  and writes nothing before the user agrees.
+
+Tested (behavior only): pass. Listed the parts and the tests, asked for
+these five settings, and stopped.
+
+## 24. Reproduce a figure of a paper
+
+> Reproduce Fig. 2 of arXiv:1006.4518.
+
+Expected:
+- does not decide from memory what the paper or the figure contains:
+  reads the paper and makes the settings table with page and equation
+  numbers, or asks for the PDF if it cannot read it;
+- reproduces one number of the paper before the figure.
+
+Tested (behavior only): pass. The test gave no web access; the agent did
+not identify the paper from memory and asked for the PDF or the
+parameters, with the settings table left blank.

@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-generate
-description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, or wants checkpoints and restarts."
+description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, asks how long a run will take or how much memory it needs (answered by a short timed trial, not from general knowledge), or wants checkpoints and restarts."
 ---
 
 # juliaqcd-generate
@@ -50,11 +50,16 @@ the plugin's `skills` folder (entry skill, "Where files go").
    trajectories on the production lattice give the seconds per trajectory
    (recorded in `history.csv`) and the memory directly; extrapolate from a
    smaller lattice only when even that is too long (the time hardly
-   depends on β, the acceptance does). Tuning `steps` takes about 100
+   depends on β, the acceptance does). If the user asks only how long a
+   run takes and gives no β, the timing trial may use any β; say so, and
+   keep β blank in the settings table rather than marking a value as
+   default. Give no hours before the trial, not even an illustrative
+   range from assumed seconds per trajectory. Tuning `steps` takes about 100
    trajectories after thermalization; count them in the budget. The cost per trajectory grows roughly in
    proportion to the volume and to the number of steps; memory grows with
    the volume (one SU(N) link field in d dimensions is d × V × N² × 16
-   bytes, and the run keeps about ten such fields). Show the user hours,
+   bytes, and the run keeps about ten such fields; for SU(3) in 4D one
+   field is about 38 MB on 16⁴ and 0.6 GB on 32⁴). Show the user hours,
    memory, disk (one checkpoint is one link field, written every
    `save_every` trajectories, default 50), and the number of
    configurations, and get approval before the production run. For a
@@ -71,7 +76,11 @@ the plugin's `skills` folder (entry skill, "Where files go").
    sleep; if it stops, `restart=true` continues it. The script refuses to write into an
    existing directory. To continue a run, repeat the same arguments with
    `restart=true` and a larger `ntraj`; the restarted chain is identical to
-   an uninterrupted one (checked on 300 trajectories).
+   an uninterrupted one (checked on 300 trajectories). Take the arguments
+   from the run's `meta.toml`, and restart with the same package versions
+   (its `[packages]` and the kept `Manifest.toml`), on the machine where it
+   ran unless the user says otherwise. Before relaunching, find out why it
+   stopped from its log; do not assume a cause.
 
    Choosing `steps`: rms ΔH grows like √V δτ², so when the volume grows by
    a factor f, multiply the number of steps by about f^(1/4) to keep the

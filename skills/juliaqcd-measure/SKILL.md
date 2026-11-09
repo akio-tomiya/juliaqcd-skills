@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-measure
-description: "Measure observables on JuliaQCD gauge configurations and get numbers with errors: Wilson loops, the static potential and Creutz ratios, the gradient flow with t0, w0, and the topological charge (SU(N) in 2, 3, or 4 dimensions), and quenched Wilson or Wilson-clover meson correlators with effective masses (four dimensions). Every measurement is checked against an independent reference implementation. Use when the user has configurations (for example from juliaqcd-generate) and wants the plaquette, t0, w0, a lattice spacing, the potential or string tension, Q or its susceptibility, a pion, rho, or other meson correlator, or an effective mass. Dirac eigenvalues are not tested yet; this skill says how to use the JuliaQCD function."
+description: "Measure observables on JuliaQCD gauge configurations and get numbers with errors: Wilson loops, the static potential and Creutz ratios, the gradient flow with t0, w0, and the topological charge (SU(N) in 2, 3, or 4 dimensions), and quenched Wilson or Wilson-clover meson correlators with effective masses (four dimensions). Every measurement is checked against an independent reference implementation. Use when the user has configurations (for example from juliaqcd-generate) and wants the plaquette, t0, w0, a lattice spacing, the potential or string tension, Q, its histogram, or its susceptibility, a pion, rho, or other meson correlator, or an effective mass. Dirac eigenvalues are not tested yet; this skill says how to use the JuliaQCD function."
 ---
 
 # juliaqcd-measure

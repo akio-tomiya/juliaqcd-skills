@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-visualize
-description: "Make figures from JuliaQCD runs and measurements: Monte Carlo histories, autocorrelation, flow curves, effective-mass plots, fit results, and visualizations of gauge-field configurations. Use when the user asks for a plot or a picture of the vacuum."
+description: "Make figures from JuliaQCD runs and measurements (the runs/ folders of juliaqcd-generate and juliaqcd-measure): Monte Carlo histories, histograms with error bars (of the topological charge, the plaquette, eigenvalues), autocorrelation, flow curves, effective-mass plots, fit results, and visualizations of gauge-field configurations. Use when the user asks for a plot, a histogram, or a picture of lattice data or of the vacuum."
 ---
 
 # juliaqcd-visualize

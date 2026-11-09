@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-extend
-description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, propagator, or flow, the method of a paper, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Reuse existing parts, keep the extension portable, and write tests."
+description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, propagator, or flow, the method of a paper, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Also use it to check the user's own HMC, force, or operator code (for example a ΔH that does not shrink with the step size). Reuse existing parts, keep the extension portable, and write tests."
 ---
 
 # juliaqcd-extend
@@ -15,7 +15,11 @@ Show the user a table: which existing JuliaQCD parts will be combined, how,
 and what is missing. Write new code only for the missing rows. A part that
 JuliaQCD already has (a solver, a field type, an integrator, the gauge
 action from Wilson loops, the gradient flow, a file reader) is used as it
-is, not rewritten. When the request comes from a paper, take the parts
+is, not rewritten. The plain-array implementations of this plugin
+(`FermionReference.jl`, `LatticeReference.jl`, `scripts/GaugeGroups.jl`)
+belong in the tests only; the new part itself is built on JuliaQCD (for an
+operator, on its Wilson operator and fields from LatticeDiracOperators).
+When the request comes from a paper, take the parts
 from its equations and cite the equation numbers.
 
 Build the missing parts as a separate package that depends on JuliaQCD,
@@ -53,6 +57,20 @@ make each one check the new code against something independent of it:
 
 Report which tests passed, with their tolerances, and call the result
 unverified by this skill set.
+
+## Checking the user's own code
+
+When the user's own HMC, force, or operator misbehaves (for example ΔH
+does not shrink as the step size goes down), do not answer from general
+knowledge alone. Apply the tests above to their code, in this order, on
+the smallest lattice: the trajectory length held fixed while the step size
+changes; the force against a central finite difference of the action on a
+few links and all generators; reversibility (forward, flip the momenta,
+forward again, to rounding); rms ΔH ∝ δτ² and ⟨exp(−ΔH)⟩ = 1.
+`check_hmc.jl` in `juliaqcd-generate` shows each test on the Wilson
+action and is the model; `scripts/GaugeGroups.jl` gives exact
+exponentials and projections to compare with. Ask for the code and the
+output before naming a cause, and report which test fails.
 
 ## Gauge groups
 

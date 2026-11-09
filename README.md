@@ -10,9 +10,10 @@ Status: early version. Written and tested: pure-gauge HMC with run-quality monit
 
 Install the skills, then ask in plain language, for example:
 
-- "Run quenched HMC for SU(4) in three dimensions."
+- "Run quenched SU(3) HMC at β = 6.0 on a 16^4 lattice, 1000 trajectories, on our workstation, and show me the plaquette history."
+- "Show me a histogram of the topological charge, with error bars."
+- "I want the propagator of the overlap operator of arXiv:hep-lat/9707022. Implement it first."
 - "Change the gauge group of this code from U(1) to SU(N)."
-- "Read this ILDG ensemble and measure the Dirac eigenvalues with the same setup as arXiv:XXXX.XXXXX."
 
 The skills put verification first. Every request goes through a settings table, a small-lattice trial, and checks that print pass or fail, before any production run. For pure-gauge HMC the checks are reversibility, ΔH scaling with the step size squared, links staying in SU(N), and known values at β = 0, strong coupling, and weak coupling. A good acceptance rate and ⟨exp(−ΔH)⟩ = 1 do not show that the chain samples the intended β; the known values do. For measurements, every number is compared with an independent implementation on plain arrays, and in two dimensions generation and measurement together reproduce the exact area law W(R,T) = u(β)^(RT). Each check is itself tested against deliberately broken code (`selftest*.jl`).
 
