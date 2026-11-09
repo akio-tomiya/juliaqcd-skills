@@ -68,10 +68,20 @@ Higher packages depend on lower ones.
     (`"evenodd"=>true`).
   - Pseudofermions and dynamical-fermion HMC, also with smeared links
     (`SmearedFermiAction`, `NHYPSmearedFermiAction`).
-  - RHMC (AlgRemez_jll); staggered and HISQ with Nf = 1, 2, 4, 8.
-  - Solvers: CG, BiCG, BiCGStab, multishift CG. Eigenvalues of any operator
-    by the Sakurai–Sugiura method (`eigensystem`).
-  - `GeneralFermionAction` for a user-defined operator (force by Enzyme).
+  - RHMC (AlgRemez_jll) for staggered and HISQ. In LatticeDiracOperators
+    1.1.4 the stored rational approximations for Nf = 1 are wrong (the
+    force misses a finite difference by about 18%), some orders stop with
+    an error, and computing a new table can fail on macOS. Nf = 2 and 4
+    were reported to agree with finite differences. Untested here: before
+    any use, compare the RHMC force with a finite difference on a small
+    lattice.
+  - Solvers: CG, BiCG, BiCGStab, multishift CG.
+  - Eigenvalues by the Sakurai–Sugiura method (`eigensystem`). In 1.1.4 it
+    stops for `GeneralFermion` operators, and its fixed acceptance
+    threshold can discard correct eigenvalues. Untested here: compare with
+    a dense diagonalization on a small lattice first.
+  - `GeneralFermionAction` for a user-defined operator (force by Enzyme),
+    four dimensions only.
   - Standard path: 4D, and 5D for domain wall.
 - **QCDMeasurements.jl**: plaquette, Polyakov loop, Wilson loops, t₀ and w₀,
   topological charge (including improved definitions), topological and
@@ -113,7 +123,8 @@ State these plainly; do not invent APIs for them.
 - Gauge groups other than SU(Nc) and U(1): no SO(N), Sp(2N), G₂. See
   `juliaqcd-extend`.
 - QCDMeasurements eigenvalue measurement for operators other than Wilson.
-  Use `eigensystem` from LatticeDiracOperators instead.
+  `eigensystem` from LatticeDiracOperators is the candidate, with the
+  caveats above.
 - Readers for NERSC, openQCD, or MILC configurations. Convert them to ILDG
   with another tool, or ask the JuliaQCD developers.
 - Wilson fermion boundary phases through `Initialize_pseudofermion_fields`:

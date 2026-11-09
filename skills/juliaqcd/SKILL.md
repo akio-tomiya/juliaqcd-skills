@@ -1,6 +1,6 @@
 ---
 name: juliaqcd
-description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefields.jl, LatticeDiracOperators.jl, QCDMeasurements.jl, LatticeMatrices.jl, Wilsonloop.jl, LatticeQCD.jl), v1 and later. Use when the user wants to generate gauge configurations, measure observables, analyze lattice data, reproduce a paper or an ILDG ensemble, change the gauge group or the dimension, or develop a new group, action, operator, or flow in Julia, or when code written for an old version (v0.6 or earlier, for example an UndefVarError for an old function name) must be translated to v1. Tested so far: pure-gauge generation and measurement, quenched Wilson and Wilson-clover meson correlators, and gauge-group checks; dynamical fermions are not covered yet. Routes the request to the matching juliaqcd-* skill and enforces the common workflow (settings table, small-lattice trial, verification, approval before production)."
+description: "Entry point for lattice gauge theory work with JuliaQCD (Gaugefields.jl, LatticeDiracOperators.jl, QCDMeasurements.jl, LatticeMatrices.jl, Wilsonloop.jl, LatticeQCD.jl), v1 and later. Use when the user wants to generate gauge configurations, measure observables, analyze lattice data, reproduce a paper or an ILDG ensemble, implement the method of a paper, change the gauge group or the dimension, or develop a new group, action, operator, or flow in Julia, or when code written for an old version (v0.6 or earlier, for example an UndefVarError for an old function name) must be translated to v1. Tested so far: pure-gauge generation and measurement, quenched Wilson and Wilson-clover meson correlators, and gauge-group checks; dynamical fermions are not covered yet. Routes the request to the matching juliaqcd-* skill and enforces the common workflow (settings table, small-lattice trial, verification, approval before production)."
 ---
 
 # JuliaQCD
@@ -50,6 +50,7 @@ Creating the environment downloads the packages and precompiles them (several mi
 | Figures, histograms | `juliaqcd-visualize` | placeholder |
 | Reproduce an arXiv paper, or measure on configurations from elsewhere (ILDG, NERSC, a colleague) | `juliaqcd-reproduce` | placeholder |
 | New group, action (Iwasaki, Symanzik), smearing, operator, flow; change dimension or group | `juliaqcd-extend` | groups tested |
+| Implement a method from a paper (a new operator, propagator, action, or algorithm) | `juliaqcd-reproduce` to read the paper, then `juliaqcd-extend` and "Requests outside what is tested here" below | procedure only; tests are written with the new parts |
 | Properties of a gauge group (kind of representation, generators, invariant tensors) | `juliaqcd-extend` (`check_group.jl`, `references/groups.md`) | tested |
 | First steps for a beginner | this skill: run `check_hmc.jl` on 4⁴ (no β needed), then a short chain, `monitor.jl`, and `check_measure.jl`. The chain needs a β and a lattice from the user; a beginner without one can take them from their supervisor or a textbook example they name | tested |
 
@@ -61,13 +62,15 @@ Before claiming that a feature exists, check it against `references/feature-map.
 
 ## Requests outside what is tested here
 
-The physics belongs to JuliaQCD; these skills check it and run it. When a request is not covered by a tested script (dynamical fermions, eigenvalues, other actions, other file formats, fits, susceptibilities, histograms):
+When a request is not covered by a tested script (a method from a paper, a new propagator or operator, dynamical fermions, eigenvalues, other actions, other file formats, fits, histograms):
 
-1. Tell the user that no tested procedure or verification script exists here for it, and what is tested nearby.
-2. If JuliaQCD provides it (feature map, package source), use that function as is: LatticeQCD.jl for dynamical-fermion HMC, `EigenvalueMeasurement` for Wilson eigenvalues, `GaugeAction` with `Wilsonloop` loops for other actions.
-3. Glue code is allowed after the user agrees: loops over configurations, file conversion, collecting outputs, counting a histogram, a ratio such as χ_t = ⟨Q²⟩/V. Use the tested helpers (`jackknife` and `choose_bin` in `juliaqcd-measure/scripts/analysis.jl`) for errors. Write it in the user's project folder, not in the plugin.
-4. Do not write new physics code: no new action force, integrator, Dirac operator, solver, eigensolver, file-format reader for binary links, or fitting routine. If JuliaQCD lacks it, say so; the user can ask the JuliaQCD developers (issue tracker of the package).
-5. Check whatever you can on a small lattice (a cold configuration, a known limit, a dense diagonalization of a 2⁴ operator, agreement with the tested scripts), and present the results as unverified by this skill set.
+1. Tell the user that no tested procedure exists here for it, and what is tested nearby.
+2. Split the request into the parts it needs and show a table: each part, whether JuliaQCD or a standard Julia package already provides it (name the function, from `references/feature-map.md` or the package source), and what is missing. For example, a propagator of a new operator needs the operator, a solver, sources, and contractions; JuliaQCD has the solvers (CG, BiCGStab, multishift CG), so only the operator and whatever else is missing are written. For a method from a paper, take the parts from the paper's equations, with equation numbers (`juliaqcd-reproduce`).
+3. Use every existing part as it is: LatticeQCD.jl for dynamical-fermion HMC, `EigenvalueMeasurement` for Wilson eigenvalues, `GaugeAction` with `Wilsonloop` loops for other gauge actions, the JuliaQCD solvers, field types, and integrators. Do not write your own version of a part JuliaQCD already has. If an existing part has a known problem (feature map), use the workaround given there, or tell the user and ask. A reader for a configuration file format JuliaQCD lacks (NERSC, openQCD, MILC) is not a part to write here; it belongs in Gaugefields (`juliaqcd-reproduce`).
+4. Write the missing parts after the user agrees to the table, in the user's project folder (a separate package that depends on JuliaQCD), never inside the plugin. Make them compatible with JuliaQCD: its field and gauge-field types, new operators and actions as new types with multiple dispatch, the same calling conventions (`mul!`, `gauge_configuration`, the constructors of the package being extended), JACC for loops over sites, and no change to its public APIs. `juliaqcd-extend` gives the details.
+5. Every new part gets tests in the package's `test/` folder that do not trust the new code: an independent implementation with plain arrays or a dense matrix on a small lattice, the symmetries it must have (gauge covariance, γ₅-hermiticity), forces against finite differences, reversibility and ΔH ∝ δτ² for anything in molecular dynamics, known limits (free field, cold configuration, strong coupling), and a deliberately broken version that the tests must catch. Run them on a small lattice before any production use.
+6. Smaller glue code (loops over configurations, collecting outputs, counting a histogram, a ratio such as χ_t = ⟨Q²⟩/V, a fit with an existing package) follows the same rule. Take errors from the tested helpers `jackknife` and `choose_bin` in `juliaqcd-measure/scripts/analysis.jl`.
+7. Present the results as unverified by this skill set and name the tests that passed. Report a missing or broken JuliaQCD feature to the user, who can pass it to the JuliaQCD developers (issue tracker of the package).
 
 ## Values from the literature
 

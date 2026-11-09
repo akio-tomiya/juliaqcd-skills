@@ -10,6 +10,18 @@ workstation, never on the laptop. This tests what the agent does once the
 skill is in use; it does not test whether the skill description triggers
 the skill.
 
+Triggering was tested separately on 2026-11-09, in a fresh Claude Code
+configuration with only this plugin installed, no user instructions, and
+an empty folder. Each prompt was sent once with `claude -p`, with shell
+and file-writing tools disabled, and the skills the agent invoked were
+recorded. All 17 lattice prompts invoked a `juliaqcd` skill that fits
+the request: the seven below and ten others in English and Japanese, such
+as a beginner's first step, low HMC acceptance, an error from
+`run_wizard()`, ILDG files, the Iwasaki action, GPUs and MPI, and meson
+correlators. None of four unrelated prompts (a Python function, building
+another lattice QCD library, eigenvalues of a random matrix in Julia, a
+general question on lattice QCD) invoked one.
+
 The skills behave the same whatever language you write in. Japanese versions
 of the prompts are in `prompts.ja.md`.
 
@@ -103,7 +115,9 @@ Polyakov loop; both are now in `references/groups.md`.
 
 Expected:
 - says the QCDMeasurements eigenvalue measurement supports Wilson only;
-- points to `eigensystem` in LatticeDiracOperators as the alternative;
+- points to `eigensystem` in LatticeDiracOperators as the alternative,
+  with the warning that it must first be checked against a dense
+  diagonalization on a small lattice;
 - does not invent a QCDMeasurements option for staggered fermions.
 
 Tested: pass. Said Wilson only, pointed to `eigensystem`, and left the

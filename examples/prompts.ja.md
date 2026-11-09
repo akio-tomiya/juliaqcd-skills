@@ -55,7 +55,7 @@
 
 すべきこと：
 - QCDMeasurements の固有値の測定は Wilson だけに対応していると言います。
-- 代わりに LatticeDiracOperators の `eigensystem` を示します。
+- 代わりに LatticeDiracOperators の `eigensystem` を示し、小さな格子の密行列の対角化と先に比べるよう注意します。
 - staggered 用の QCDMeasurements の設定を作り話で書きません。
 
 ## 7. スケールとポテンシャルを測る

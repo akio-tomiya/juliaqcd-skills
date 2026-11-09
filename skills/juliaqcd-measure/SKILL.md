@@ -242,8 +242,11 @@ user and to check (read the installed source for the version in use):
 - A 2⁴ test field: build it as `check_fermion.jl` does (its rough field and
   the link transfer of `fermion_common.jl`); LatticeDiracOperators works on
   extent 2, as the free-spectrum check of `check_fermion.jl` shows.
-- `eigensystem` (LatticeDiracOperators, Sakurai–Sugiura) takes any
-  operator, including γ₅D and staggered; it is untested here.
+- `eigensystem` (LatticeDiracOperators, Sakurai–Sugiura) is meant for
+  any operator, including γ₅D and staggered, but it is untested here. In
+  1.1.4 its fixed acceptance threshold can discard correct eigenvalues,
+  and it stops for `GeneralFermion` operators. Compare its result with a
+  dense diagonalization of a 2⁴ operator before using it.
 - A histogram or spectral density with errors is glue code: per-
   configuration counts after the thermalization cut of `monitor.jl`, and
   a binned jackknife over configurations, with the bin from `choose_bin`

@@ -1,23 +1,58 @@
 ---
 name: juliaqcd-extend
-description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, or flow, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Reuse existing parts, keep the extension portable, and write tests."
+description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, propagator, or flow, the method of a paper, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Reuse existing parts, keep the extension portable, and write tests."
 ---
 
 # juliaqcd-extend
 
-Status: the gauge-group part is written and tested. Actions, smearing,
-operators, flows, and lattice-level tests (gauge invariance, forces, HMC) are
-not written yet.
+Status: the gauge-group part is written and tested. For actions, smearing,
+operators, and flows there is a procedure and a list of required tests
+below, but no tested script yet.
 
 ## Before writing code
 
 Show the user a table: which existing JuliaQCD parts will be combined, how,
-and what is missing. Write new code only for the missing rows.
+and what is missing. Write new code only for the missing rows. A part that
+JuliaQCD already has (a solver, a field type, an integrator, the gauge
+action from Wilson loops, the gradient flow, a file reader) is used as it
+is, not rewritten. When the request comes from a paper, take the parts
+from its equations and cite the equation numbers.
 
-Recommend building the feature as a separate package that depends on
-JuliaQCD before patching JuliaQCD itself. Add new groups and operators by
-type and multiple dispatch, not by branching on strings. Write kernels with
-JACC, not CUDA alone. Do not change public APIs.
+Build the missing parts as a separate package that depends on JuliaQCD,
+in the user's project folder, before considering a patch to JuliaQCD
+itself. Keep them compatible with JuliaQCD so that its other parts work
+on them: use its field types, add new groups, operators, and actions as
+new types with multiple dispatch (not by branching on strings), follow the
+calling conventions of the package being extended (`mul!` for an
+operator, its constructors and keyword names), write loops over sites with
+JACC (not CUDA alone), and do not change public APIs.
+
+## Tests for a new part
+
+Write them in the package's `test/` folder, run them on a small lattice
+(2⁴ to 4⁴, or the 2D and 3D analogues) before any production use, and
+make each one check the new code against something independent of it:
+
+- An implementation with plain arrays or a dense matrix of the whole
+  operator, compared entry by entry (as `check_fermion.jl` in
+  `juliaqcd-measure` compares Wilson and clover with
+  `FermionReference.jl`).
+- Symmetries: gauge covariance under a random gauge transformation,
+  γ₅-hermiticity or the antisymmetry the operator must have, translation
+  invariance, the boundary conditions.
+- Known limits: free field (cold configuration) against the analytic
+  spectrum, strong coupling, a published number the user names.
+- For anything in molecular dynamics: the force against a finite
+  difference of the action, reversibility, rms ΔH ∝ δτ², and
+  ⟨exp(−ΔH)⟩ = 1, as `check_hmc.jl` does for the Wilson action.
+- For a solver or eigenvalue result: the residual computed independently,
+  and a dense diagonalization on the smallest lattice.
+- A deliberately broken version (a wrong sign, a dropped term, a wrong
+  boundary phase) that the tests must catch, as the `selftest_*.jl`
+  scripts here do.
+
+Report which tests passed, with their tolerances, and call the result
+unverified by this skill set.
 
 ## Gauge groups
 
