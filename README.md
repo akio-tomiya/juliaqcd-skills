@@ -14,6 +14,9 @@ Install the skills, then ask in plain language, for example:
 - "Show me a histogram of the topological charge, with error bars."
 - "I want the propagator of the overlap operator of arXiv:hep-lat/9707022. Implement it first."
 - "Change the gauge group of this code from U(1) to SU(N)."
+- "Where is the Wilson–Dirac operator defined in JuliaQCD, and which files would I touch to add a new fermion action?"
+
+Questions about the code are answered with the package, version, file, and line, and the reason to look there, from a map of the registered versions (LatticeMatrices 1.2.11, Gaugefields 1.1.13, LatticeDiracOperators 1.1.6, QCDMeasurements 1.0.2, Wilsonloop 0.1.5). The skill checks the installed versions first, and writes no code unless asked.
 
 The skills put verification first. Every request goes through a settings table, a small-lattice trial, and checks that print pass or fail, before any production run. For pure-gauge HMC the checks are reversibility, ΔH scaling with the step size squared, links staying in SU(N), and known values at β = 0, strong coupling, and weak coupling. A good acceptance rate and ⟨exp(−ΔH)⟩ = 1 do not show that the chain samples the intended β; the known values do. For measurements, every number is compared with an independent implementation on plain arrays, and in two dimensions generation and measurement together reproduce the exact area law W(R,T) = u(β)^(RT). Each check is itself tested against deliberately broken code (`selftest*.jl`).
 
