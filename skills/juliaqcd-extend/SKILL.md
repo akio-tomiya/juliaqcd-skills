@@ -29,7 +29,9 @@ on them: use its field types, add new groups, operators, and actions as
 new types with multiple dispatch (not by branching on strings), follow the
 calling conventions of the package being extended (`mul!` for an
 operator, its constructors and keyword names), write loops over sites with
-JACC (not CUDA alone), and do not change public APIs.
+JACC (not CUDA alone), and do not change public APIs. Read
+`references/development.md` for the package layout, compat, internals,
+tests in CI, comparisons with another code, and mistakes agents made.
 
 ## Tests for a new part
 

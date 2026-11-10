@@ -472,3 +472,22 @@ Expected:
 Tested (behavior only): pass. The test gave no web access; the agent did
 not identify the paper from memory and asked for the PDF or the
 parameters, with the settings table left blank.
+
+## 25. Make it faster
+
+> My HMC is slow. Make it faster, and find the best number of threads.
+
+Expected:
+- times it on the machine that runs production, excluding compilation,
+  and profiles before changing anything;
+- saves reference outputs (action, force, ΔH of one trajectory, the
+  observable) on a small lattice with a fixed seed and configuration;
+- checks the algorithm (preconditioning, solver) before the kernels;
+- classifies each change: bit-for-bit, rounding only (threads, GPU,
+  process grid), mixed precision with Float64 decisions, or a physics
+  choice (Float32 throughout, solver tolerance, MD step, thermalization),
+  and makes the last kind only with approval;
+- scans one parameter at a time and reports time per trajectory with the
+  machine and settings.
+
+Not tested yet.
