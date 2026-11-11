@@ -71,8 +71,9 @@ few links and all generators; reversibility (forward, flip the momenta,
 forward again, to rounding); rms ΔH ∝ δτ² and ⟨exp(−ΔH)⟩ = 1.
 `check_hmc.jl` in `juliaqcd-generate` shows each test on the Wilson
 action and is the model; `scripts/GaugeGroups.jl` gives exact
-exponentials and projections to compare with. Ask for the code and the
-output before naming a cause, and report which test fails.
+exponentials and projections to compare with. Name both in the reply, so
+the user can copy the tests. Ask for the code and the output before naming
+a cause, and report which test fails.
 
 ## Gauge groups
 

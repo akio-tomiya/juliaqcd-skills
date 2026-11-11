@@ -108,19 +108,28 @@ was meant. It pointed out that "SO(3)" can mean lattice SO(3), SU(2)/Z₂,
 or SU(2) with adjoint fermions, and that the center matters for the
 Polyakov loop; both are now in `references/groups.md`.
 
-## 5. A feature that is not there
+## 5. A feature to check before use
 
 > Measure the eigenvalues of the staggered Dirac operator with
 > QCDMeasurements.
 
 Expected:
-- says the QCDMeasurements eigenvalue measurement supports Wilson only;
-- points to `eigensystem` in LatticeDiracOperators as the alternative,
-  with the warning that it must first be checked against a dense
-  diagonalization on a small lattice;
-- does not invent a QCDMeasurements option for staggered fermions.
+- uses `EigenvalueMeasurement` with `fermiontype="Staggered"` and asks for
+  the mass (the constructor's default of 0.1 is not the user's choice);
+- says that only a cold 4⁴ field was checked here, and checks the user's
+  case on a small lattice against a dense diagonalization first;
+- proposes the spectrum (D or D†D) and the number of modes as defaults
+  the user can change, rather than adding questions.
 
-Tested: pass. Said Wilson only, pointed to `eigensystem`, and left the
+Before 2026-11-11 the expected answer was "Wilson only": the feature map
+said so. A `claude -p` run read the installed source and used the
+staggered option; a check on a cold 4⁴ field then showed that it works
+(see `juliaqcd-measure`), and the feature map was corrected.
+
+Tested (with the old expectation): pass. With the new expectation
+(`claude -p`, 2026-11-11): pass with remarks in the runs that reached a
+reply; two runs read the package source until the 12-turn limit of the
+test and gave no reply. Said Wilson only, pointed to `eigensystem`, and left the
 call signature open rather than guessing it. `juliaqcd-measure` is still a
 placeholder, so the answer came from the feature map alone.
 
@@ -313,7 +322,9 @@ Tested (behavior only): pass after a fix. The first agent used no skill
 and answered from general knowledge. The description of
 `juliaqcd-extend` now covers checking the user's own code, and the skill
 has a section on it; the agent then used it and gave the tests in this
-order.
+order. `claude -p` runs (2026-11-11): failed twice without naming
+`check_hmc.jl` and `GaugeGroups.jl`; the skill now says to name both in
+the reply, and two runs after that passed.
 
 ## 15. Has it thermalized, is it enough?
 
@@ -349,8 +360,11 @@ asked for the path.
 > lattice take?
 
 Expected:
-- gives no time from general knowledge: asks for the machine and measures
-  the seconds per trajectory with a short trial;
+- answers in the first sentence with an estimate from the skills' measured
+  table (seconds per trajectory, scaled by volume and steps in one line),
+  marked as an estimate from the machine it was measured on, and gives no
+  time from general knowledge;
+- replaces it with a short trial on the user's machine;
 - computes the memory (one SU(3) link field on 32⁴ is about 0.6 GB; a run
   keeps about ten) and the disk from the formula;
 - does not mark β as a default: it is a physics parameter, but the timing
@@ -363,8 +377,11 @@ second agent marked β = 6.0 as a default; the skill now says to keep β
 blank and that the timing trial may use any β. The third left β blank,
 computed the memory (about 6 GB) and the disk (about 12 GB), and gave
 the trial command, but still ended with an hours range from assumed
-seconds per trajectory. The sentence forbidding that range was added
-after this run and is not yet tested.
+seconds per trajectory. On 2026-11-11 the rule changed: the skills now
+carry measured timings (`juliaqcd/references/cost.md`) and answer with an
+estimate from them first. `claude -p` runs: the first took the number of
+MD steps from memory (fail); after the fourth-root rule was written into
+the table's instructions, pass with remarks in both languages.
 
 ## 18. Continue a run that stopped
 
@@ -543,6 +560,10 @@ SU(4) again, as the first run had; the reference now says to run all
 three also when the user works in SU(3) only. `claude -p` runs after
 this fix (2026-11-11, both languages): pass with remarks; the Japanese
 run included SU(2) and SU(4) but no lattice with different extents.
+After the rule that a reply answers first, one run led with a suspect from
+the package source and left out most of the plan (fail); the debugging
+reference now opens with what the first reply states, and two runs in
+each language after that passed with remarks.
 
 ## 27. Two flavors of clover fermions
 

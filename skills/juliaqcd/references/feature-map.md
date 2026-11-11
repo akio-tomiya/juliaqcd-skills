@@ -100,7 +100,8 @@ Higher packages depend on lower ones.
   | PCAC mass | Wilson, clover |
   | Residual mass | domain wall (Shamir) |
   | Chiral condensate | Wilson, staggered |
-  | Eigenvalues of D (`EigenvalueMeasurement`) and of M†M (`MdagMSpectrumMeasurement`) | Wilson only (Arpack) |
+  | Eigenvalues of D (`EigenvalueMeasurement`) | Wilson and staggered (`fermiontype="Staggered", mass`), Arpack on the sparse matrix; both agreed with a dense diagonalization on a cold 4⁴ field (1.0.2, checked 2026-11-11) |
+  | Eigenvalues of M†M (`MdagMSpectrumMeasurement`) | Wilson; others not checked |
 
   `EigenvalueMeasurement(U; fermiontype="Wilson", κ=1, r=1, nev=10,
   which=:SM, isDdagD=false, solver="Arpack", BoundaryCondition=nothing)`
@@ -129,7 +130,8 @@ State these plainly; do not invent APIs for them.
 
 - Gauge groups other than SU(Nc) and U(1): no SO(N), Sp(2N), G₂. See
   `juliaqcd-extend`.
-- QCDMeasurements eigenvalue measurement for operators other than Wilson.
+- QCDMeasurements eigenvalue measurement for operators other than Wilson
+  and staggered (the Hermitian γ₅D, domain wall): not checked.
   `eigensystem` from LatticeDiracOperators is the candidate, with the
   caveats above.
 - Readers for openQCD or MILC configurations, and NERSC before Gaugefields

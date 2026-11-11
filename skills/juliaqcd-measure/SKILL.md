@@ -48,8 +48,8 @@ valence quarks see no sea quarks. Say so when reporting meson masses.
    ```
    For other cases keep the group and dimension, for example `colors=2
    lattice=4,6` in two dimensions. Every line must say PASS. About 25
-   seconds and 1.7 GB for 4⁴ SU(3) on one core, most of it compilation
-   (on a laptop, ask first). The environment is the one of
+   seconds and 1.7 GB for 4⁴ SU(3) on one core, most of it compilation;
+   start it without asking. The environment is the one of
    `juliaqcd-generate` (it includes `Wilsonloop`). Copy the whole `skills`
    folder when moving the scripts; they load files from
    `juliaqcd-generate` and `juliaqcd-extend`.
@@ -212,18 +212,31 @@ histogram or a susceptibility. For those, write glue code on
 
 ## Dirac eigenvalues (not tested here)
 
-No script or check here covers them. QCDMeasurements provides
+No script here covers them. QCDMeasurements provides
 `EigenvalueMeasurement(U; fermiontype="Wilson", κ, nev=10, which=:SM,
-isDdagD=false, solver="Arpack", BoundaryCondition)`; `measure(m, U)` builds
-D as a sparse matrix and calls Arpack `eigs`. Things to settle with the
-user and to check (read the installed source for the version in use):
+isDdagD=false, solver="Arpack", BoundaryCondition)`, and the same with
+`fermiontype="Staggered", mass` for staggered fermions; `measure(m, U)`
+builds D as a sparse matrix (`construct_sparsematrix`, which applies D to
+unit vectors and works for any operator) and calls Arpack `eigs`. One
+check was run here (QCDMeasurements 1.0.2, LatticeDiracOperators 1.1.6,
+2026-11-11): on a cold 4⁴ SU(3) field, Arpack and a dense diagonalization
+of the same sparse matrix agreed to 1e-14 for Wilson (κ = 0.12) and for
+staggered (m = 0.1), and the staggered modes had Re λ = m and Im λ =
+±sin(π/4), the free spectrum with the antiperiodic time direction.
+Configurations other than a cold one were not checked. Ask only for the
+configurations and for κ or the mass; propose the rest as defaults the user
+can change (the smallest |λ| of D with `which=:SM`, `nev=20`), and start the
+small-lattice check below without waiting. Points to check (read the
+installed source for the version in use only when the call above fails):
 
-- κ has a default of 1 in the constructor: always pass the user's κ.
+- κ has a default of 1 and the staggered mass a default of 0.1 in the
+  constructor: always pass the user's value.
 - Which spectrum: D itself (complex, `which=:SM` gives the smallest
   magnitudes), D†D (`isDdagD=true`), or the Hermitian γ₅D, which the
   function does not provide.
 - How many: `nev`. `solver="exact"` builds a dense matrix of (12V)²
-  complex numbers, 39 GB for 8⁴; use it only on tiny lattices.
+  complex numbers for Wilson and (3V)² for staggered SU(3), 39 GB and
+  2.4 GB for 8⁴; use it only on tiny lattices.
 - Boundary phases: the operator is built with the same path whose
   boundary-condition keyword was found to be ignored for meson correlators
   (`references/mesons.md`); check the phases before relying on a

@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-generate
-description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions, and HMC with Nf = 2 Wilson or Wilson-clover fermions in 4 dimensions, optionally on stout-smeared links) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, asks how long a run will take or how much memory it needs (answered by a short timed trial, not from general knowledge), or wants checkpoints and restarts."
+description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions, and HMC with Nf = 2 Wilson or Wilson-clover fermions in 4 dimensions, optionally on stout-smeared links) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, asks how long a run will take or how much memory it needs (an estimate from measured timings at once, then a short timed trial; not from general knowledge), or wants checkpoints and restarts."
 ---
 
 # juliaqcd-generate
@@ -46,12 +46,12 @@ the plugin's `skills` folder (entry skill, "Where files go").
    dimension, for example `colors=2 lattice=4,4,4` or `colors=2
    lattice=8,8`. Every line must say PASS. See "What the checks test"
    below. It writes a few small JLD2 files to `workdir=` (default: a new
-   temporary directory). About 2 minutes and 1.5 GB for 4⁴ SU(3); on a
-   laptop, ask first (entry skill, "Which machine"). When the user asks
+   temporary directory). About 2 minutes and 1.5 GB for 4⁴ SU(3): start it
+   without asking (entry skill, "Which machine"). When the user asks
    whether the HMC works, the checks are the first half of the answer;
    the second is a short chain with `hmc_puregauge.jl` (at a β the user
    gives) and `monitor.jl`, reporting the thermalization cut and any WARN.
-   Plan both, even when the first must wait for an approval.
+   Start the checks at once and plan the chain.
 4. Measure the cost with `hmc_puregauge.jl` at the production β: about 10
    trajectories on the production lattice give the seconds per trajectory
    (recorded in `history.csv`) and the memory directly; extrapolate from a
@@ -59,8 +59,11 @@ the plugin's `skills` folder (entry skill, "Where files go").
    depends on β, the acceptance does). If the user asks only how long a
    run takes and gives no β, the timing trial may use any β; say so, and
    keep β blank in the settings table rather than marking a value as
-   default. Give no hours before the trial, not even an illustrative
-   range from assumed seconds per trajectory. Tuning `steps` takes about 100
+   default. Before the trial, give the estimate from
+   `juliaqcd/references/cost.md`: the measured seconds per trajectory
+   times the ratio of volumes, of steps, and the number of trajectories,
+   in one line, marked as an estimate from the machine it was measured
+   on. The trial replaces it. Tuning `steps` takes about 100
    trajectories after thermalization; count them in the budget. The cost per trajectory grows roughly in
    proportion to the volume and to the number of steps; memory grows with
    the volume (one SU(N) link field in d dimensions is d × V × N² × 16

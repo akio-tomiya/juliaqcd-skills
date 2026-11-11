@@ -7,6 +7,16 @@ script here; it collects faults that cost time in work on JuliaQCD v1 and
 how they were found. Ask for the code, the command, and the full output
 before naming a cause, and report which test located the fault.
 
+The first reply states the plan, not a cause: what you need (code,
+command, full output, versions); the smallest reproduction (fixed seed,
+one saved configuration, a lattice with all extents different, SU(2),
+SU(3), and SU(4)); the comparison that splits the cause (CPU against GPU,
+Float32 against Float64, old version against new); following the
+functions production actually calls, stage by stage, to the first wrong or
+non-finite value; for a GPU, a search for Float64 constants in kernels.
+A suspect found in the source or below may follow the plan, named as a
+suspect to test.
+
 ## Where the specific tables are
 
 - A check of this plugin fails: the table "What the checks test" in

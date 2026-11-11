@@ -309,11 +309,20 @@ def cmd_judge(argv):
             print(cid, overall, flush=True)
 
 
+def burden(text):
+    """Length of a reply and the number of questions in it: question marks,
+    ASCII or full width, outside table rows (a blank in the settings table
+    is not a separate question)."""
+    prose = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("|"))
+    return len(text), len(re.findall("[?\uff1f]", prose))
+
+
 def cmd_report(argv):
     out, _, _, _ = parse_opts(argv)
     cases = json.load(open(os.path.join(out, "cases.json"), encoding="utf-8"))
-    lines = ["| Case | Skills invoked | Trigger | Route | Behavior | Not met or broken |",
-             "|---|---|---|---|---|---|"]
+    lines = ["| Case | Skills invoked | Trigger | Route | Characters | Questions | Behavior | Not met or broken |",
+             "|---|---|---|---|---|---|---|---|"]
+    sizes = []
     for c in cases:
         res = os.path.join(out, "results", c["id"] + ".json")
         if not os.path.exists(res):
@@ -336,7 +345,16 @@ def cmd_report(argv):
                              if e["verdict"] in ("not met", "partly")] +
                             [e["rule"][:60] + " (broken)" for e in g.get("general", [])
                              if e["verdict"] == "broken"])
-        lines.append(f"| {c['id']} | {', '.join(inv) or '-'} | {trig} | {route} | {beh} | {bad} |")
+        n, q = burden(r.get("final", ""))
+        if c["skills"]:
+            sizes.append((n, q))
+        lines.append(f"| {c['id']} | {', '.join(inv) or '-'} | {trig} | {route} | {n} | {q} | {beh} | {bad} |")
+    if sizes:
+        ns, qs = sorted(x[0] for x in sizes), sorted(x[1] for x in sizes)
+        lines += ["", f"Lattice cases: {len(sizes)}; first reply median {ns[len(ns) // 2]} "
+                  f"characters (max {ns[-1]}); questions median {qs[len(qs) // 2]} "
+                  f"(max {qs[-1]}); replies with more than three questions: "
+                  f"{sum(1 for x in qs if x > 3)}."]
     open(os.path.join(out, "summary.md"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
     print("\n".join(lines))
 
