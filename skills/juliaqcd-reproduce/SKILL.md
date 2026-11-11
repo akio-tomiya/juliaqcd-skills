@@ -5,11 +5,12 @@ description: "Reproduce a published lattice result or read an ILDG or NERSC ense
 
 # juliaqcd-reproduce
 
-Status: placeholder. Not written yet.
+Status: procedures for reading a paper and for configurations from elsewhere;
+no script of its own, and no reproduction tested end to end.
 
 ## When this skill is called
 
-Tell the user that this skill is not written yet: reading outside configurations and the three gates below are not automated or tested. Then, by case.
+Tell the user that reading outside configurations and the three gates below are not automated or tested. Then, by case.
 
 A published result:
 

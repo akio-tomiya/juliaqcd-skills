@@ -1,0 +1,196 @@
+# Every check script of the skills, and a small end-to-end pipeline, run by
+# tests/run_checks.jl. Paths are relative to the repository root; "{tmp}" is
+# a fresh directory for the run.
+#
+# level = "ci"           Julia standard library only; seconds to a minute;
+#                        runs anywhere, including GitHub Actions.
+# level = "workstation"  needs the JuliaQCD environment; minutes; run on a
+#                        workstation or cluster node, never on a laptop.
+#
+# Every check must exit with code 0. "minutes" is the time measured on one
+# core of an Apple M4, compilation included, to plan the run.
+# Steps with the same "group" run in order and share {tmp}; a step is skipped
+# when an earlier step of its group failed.
+
+[[check]]
+name = "groups: selftest"
+level = "ci"
+script = "skills/juliaqcd-extend/scripts/selftest.jl"
+minutes = 0.5
+
+[[check]]
+name = "groups: all built-in groups"
+level = "ci"
+script = "skills/juliaqcd-extend/scripts/check_group.jl"
+args = ["all"]
+minutes = 0.5
+
+[[check]]
+name = "monitor: selftest"
+level = "ci"
+script = "skills/juliaqcd-generate/scripts/selftest_monitor.jl"
+minutes = 0.2
+
+[[check]]
+name = "analysis: selftest"
+level = "ci"
+script = "skills/juliaqcd-measure/scripts/selftest_analysis.jl"
+minutes = 1
+
+[[check]]
+name = "pure-gauge HMC: SU(3) 4^4"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/check_hmc.jl"
+args = ["colors=3", "lattice=4,4,4,4", "workdir={tmp}/check_hmc_su3"]
+minutes = 2
+
+[[check]]
+name = "pure-gauge HMC: SU(2) 4^3"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/check_hmc.jl"
+args = ["colors=2", "lattice=4,4,4", "workdir={tmp}/check_hmc_su2"]
+minutes = 1.5
+
+[[check]]
+name = "pure-gauge HMC: selftest"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/selftest_hmc.jl"
+minutes = 7
+
+[[check]]
+name = "measurements: SU(3) 4^4"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/check_measure.jl"
+args = ["colors=3", "lattice=4,4,4,4", "workdir={tmp}/check_measure"]
+minutes = 0.5
+
+[[check]]
+name = "measurements: selftest"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/selftest_measure.jl"
+minutes = 2
+
+[[check]]
+name = "2D area law: SU(2)"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/check_area_law.jl"
+args = ["colors=2", "beta=4.0"]
+minutes = 1
+
+[[check]]
+name = "fermions: SU(3) 4^3x6"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/check_fermion.jl"
+args = ["colors=3", "lattice=4,4,4,6", "workdir={tmp}/check_fermion"]
+minutes = 1
+
+[[check]]
+name = "fermions: selftest"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/selftest_fermion.jl"
+minutes = 4
+
+[[check]]
+name = "Nf=2 HMC: Wilson"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/check_hmc_wilson.jl"
+args = ["colors=3", "lattice=4,4,4,4", "kappa=0.12", "csw=0", "workdir={tmp}/check_wilson"]
+minutes = 1.2
+
+[[check]]
+name = "Nf=2 HMC: clover on stout links"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/check_hmc_wilson.jl"
+args = ["colors=3", "lattice=4,4,4,4", "kappa=0.12", "csw=1.5", "rho=0.1", "smear_iterations=2", "workdir={tmp}/check_clover"]
+minutes = 2
+
+[[check]]
+name = "Nf=2 HMC: selftest"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/selftest_hmc_wilson.jl"
+minutes = 5
+
+# End to end: generate, monitor, measure, analyze, as the skills tell an
+# agent to do it, on lattices small enough to finish in minutes. The
+# numbers are not checked against known values (the checks above do that);
+# these steps catch scripts that no longer fit together.
+
+[[check]]
+name = "pipeline: pure-gauge HMC"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/hmc_puregauge.jl"
+args = ["out={tmp}/pg", "colors=3", "lattice=4,4,4,8", "beta=5.7", "ntraj=20", "steps=10", "seed=1234", "save_every=5", "q_every=5"]
+minutes = 1.5
+
+[[check]]
+name = "pipeline: restart of the pure-gauge run"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/hmc_puregauge.jl"
+args = ["out={tmp}/pg", "colors=3", "lattice=4,4,4,8", "beta=5.7", "ntraj=30", "steps=10", "seed=1234", "save_every=5", "q_every=5", "restart=true"]
+minutes = 1
+
+[[check]]
+name = "pipeline: monitor (WARN allowed, FAIL not)"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/monitor.jl"
+args = ["{tmp}/pg"]
+minutes = 0.2
+
+[[check]]
+name = "pipeline: measure_ensemble"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/measure_ensemble.jl"
+args = ["run={tmp}/pg", "flow_tmax=0.5"]
+minutes = 1.5
+
+[[check]]
+name = "pipeline: analyze_ensemble"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/analyze_ensemble.jl"
+args = ["{tmp}/pg", "therm=5"]
+minutes = 0.3
+
+[[check]]
+name = "pipeline: measure_mesons"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/measure_mesons.jl"
+args = ["run={tmp}/pg", "kappa=0.12", "csw=0", "name=k012"]
+minutes = 1.5
+
+[[check]]
+name = "pipeline: analyze_mesons"
+group = "puregauge"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/analyze_mesons.jl"
+args = ["{tmp}/pg", "name=k012", "therm=5"]
+minutes = 0.3
+
+[[check]]
+name = "pipeline: Nf=2 clover HMC"
+group = "wilson"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/hmc_wilson.jl"
+args = ["out={tmp}/wf", "colors=3", "lattice=4,4,4,8", "beta=5.7", "kappa=0.12", "csw=1.5", "rho=0.1", "smear_iterations=2", "ntraj=10", "steps=10", "seed=1234", "save_every=5", "q_every=5"]
+minutes = 1.5
+
+[[check]]
+name = "pipeline: monitor of the Nf=2 run"
+group = "wilson"
+level = "workstation"
+script = "skills/juliaqcd-generate/scripts/monitor.jl"
+args = ["{tmp}/wf"]
+minutes = 0.2
+
+[[check]]
+name = "pipeline: measure_ensemble on the Nf=2 run"
+group = "wilson"
+level = "workstation"
+script = "skills/juliaqcd-measure/scripts/measure_ensemble.jl"
+args = ["run={tmp}/wf", "flow_tmax=0.5"]
+minutes = 1

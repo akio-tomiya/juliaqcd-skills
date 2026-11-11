@@ -7,6 +7,11 @@ for behavior only, in the trigger-test setting described below: the agent
 had no shell, so it ran no computation, and its questions went unanswered.
 The folder was empty, except in example 18, where it held a made-up
 interrupted run (parameters, a history, and placeholder checkpoints).
+Examples 25 to 28 were tested on 2026-11-11 for behavior only, with
+subagents and an independent grading subagent, as described in
+`tests/README.md`. On 2026-11-11 all examples were also run through
+`claude -p` (trigger and behavior, no shell, graded by a separate
+`claude -p`); all results are listed in `tests/RESULTS.md`.
 
 How they were tested: an agent with no other context was told to act as
 Claude Code with this plugin installed, given a copy of the plugin without
@@ -45,6 +50,10 @@ Tested: pass. All seven checks passed (117 s, 1.5 GB on one core). The
 prompt gives no β, so the agent stopped before the chain and asked for it
 instead of choosing one. Its feedback led to the rule that physics
 parameters are always asked and algorithmic ones may be defaults.
+`claude -p` run (2026-11-11, behavior only): the Japanese prompt failed
+once; the agent planned `check_hmc.jl` but not the short chain. The
+generate skill now says the chain and the monitor are the second half of
+"does it work"; after that both languages passed.
 
 ## 2. A request with a missing parameter
 
@@ -201,8 +210,8 @@ Expected:
 - reads the run's `meta.toml` and runs `monitor.jl` first;
 - asks at which flow time and with which definition Q is taken;
 - counts per configuration after the thermalization cut and takes binned
-  jackknife errors with `jackknife` and `choose_bin`, and says which bin
-  was used;
+  jackknife errors (`jk_hist` from BlockJackknife.jl, or `jackknife` and
+  `choose_bin`), and says which bin was used;
 - labels the counting and the plot as glue code, unverified by this skill
   set.
 
@@ -212,6 +221,9 @@ descriptions of `juliaqcd-visualize` and `juliaqcd-measure` now mention
 histograms and the run folders; the agent then used
 `juliaqcd-visualize`, found no `runs/b60`, and asked for the path and for
 the file with Q per configuration.
+`claude -p` run (2026-11-11): failed in both languages; neither read the
+monitor first nor asked for the flow time and the definition of Q. The
+visualize skill now asks for both; after that both passed with remarks.
 
 ## 10. The effective mass of the pion
 
@@ -279,6 +291,10 @@ Expected:
 Tested (behavior only): pass. Used `juliaqcd-analyze`, explained both
 possibilities and how to tell them apart (the error grows with the bin
 size, or it stays flat), and asked for the series and the binning.
+`claude -p` run (2026-11-11): failed once, assuming autocorrelation
+without saying that a whole-lattice average can have a genuinely small
+error. The analyze skill now says to give both; after that, pass with
+remarks.
 
 ## 14. Check your own HMC code
 
@@ -490,4 +506,75 @@ Expected:
 - scans one parameter at a time and reports time per trajectory with the
   machine and settings.
 
-Not tested yet.
+Tested (behavior only, 2026-11-11): pass. Planned timing on the
+production machine without compilation, a profile, and reference outputs
+on 4⁴ with a fixed seed before any change; checked the preconditioning and
+the solver first; sorted the changes into the four kinds and kept the
+physics choices for approval; scanned the threads one setting at a time.
+`claude -p` runs (2026-11-11): failed twice; the agent read the
+performance reference but its reply named only part of the plan (no
+mixed-precision kind, no compilation excluded). The reference now opens
+with what the first reply states; two runs after that: pass, and pass with
+remarks.
+
+## 26. My measurement gives NaN
+
+> My flow measurement gives NaN in single precision on the GPU, but not in
+> double precision. Find the bug.
+
+Expected:
+- asks for the code, the command, the output, and the versions before
+  naming a cause;
+- makes the smallest reproduction (fixed seed, one saved configuration,
+  a lattice with different extents, SU(2), SU(3), SU(4));
+- runs the same thing on the CPU in Float32 to separate the algorithm from
+  the GPU, and looks for Float64 constants in kernels;
+- follows the functions production actually calls, stage by stage, and
+  stops at the first non-finite value;
+- does not skip the NaN or change a tolerance to make the run finish.
+
+Tested (behavior only, 2026-11-11): pass after a fix. Asked for the code,
+the command, the output, and the versions before naming a cause, planned
+the CPU Float32 run first, and stopped at the first non-finite value. Its
+example of a lattice with all extents different was 4³×8, copied from the
+debugging reference, which had three equal extents; the reference now
+says 4×6×8×10. A second run after the fix used it, but left out SU(2) and
+SU(4) again, as the first run had; the reference now says to run all
+three also when the user works in SU(3) only. `claude -p` runs after
+this fix (2026-11-11, both languages): pass with remarks; the Japanese
+run included SU(2) and SU(4) but no lattice with different extents.
+
+## 27. Two flavors of clover fermions
+
+> Generate Nf = 2 clover configurations on 8³×16 with stout smearing.
+
+Expected:
+- asks for β, κ, c_SW, the stout ρ and number of steps, and the number of
+  trajectories; does not take κ_c or c_SW from memory;
+- runs `check_fermion.jl`, then `check_hmc_wilson.jl` with the production
+  κ, c_SW, and smearing, and a timing trial, before asking for approval;
+- runs `hmc_wilson.jl` and `monitor.jl`.
+
+Tested (behavior only, 2026-11-11): pass. Asked for β, κ, c_SW, ρ, the
+number of stout steps, and the number of trajectories, said that it would
+not take κ_c or c_SW from memory and asked for the paper, and planned
+`check_fermion.jl`, `check_hmc_wilson.jl` with the production values, a
+timing trial, the approval, `hmc_wilson.jl`, and `monitor.jl`.
+
+## 28. Fermions in another representation
+
+> I want Wilson fermions in the adjoint representation of SU(2).
+
+Expected:
+- says that JuliaQCD v1 has only the defining representation;
+- asks which theory: Dirac or Majorana, Nf; notes that the adjoint of SU(2)
+  is real, so a Pfaffian and its sign may matter;
+- proposes the parts of `juliaqcd-extend`, "Fermions in another
+  representation": the link map R(U) with a pullback, tests of the map
+  alone, the operator on R(U) with the reference tests, then the HMC
+  checks; builds nothing before the answers.
+
+Tested (behavior only, 2026-11-11): pass. Said that v1 has the defining
+representation only, asked Dirac or Majorana and Nf, noted the Pfaffian of
+the real adjoint of SU(2), and listed the parts and their tests from the
+extend skill without building anything.

@@ -5,6 +5,15 @@ code, to find the best number of threads, ranks, or GPUs, or to profile.
 Nothing here is a tested script; the procedure is what makes a speed-up
 safe to accept.
 
+The first reply states the whole plan, not a part of it: the machine that
+runs production, timed without compilation, and a profile before any
+change; reference outputs (action, force, ΔH of one trajectory, the
+observable) saved on a small lattice with a fixed seed and configuration;
+the algorithm checked before the kernels; the four kinds of change below,
+each named (bit for bit; rounding only, such as threads, GPU, process grid;
+mixed precision with decisions in Float64; physics choices, made only with
+approval); and one parameter scanned at a time.
+
 ## Check the algorithm before the kernels
 
 Before tuning any loop, check that the computation is not already losing at

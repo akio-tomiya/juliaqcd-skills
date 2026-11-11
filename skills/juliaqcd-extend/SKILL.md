@@ -1,6 +1,6 @@
 ---
 name: juliaqcd-extend
-description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, propagator, or flow, the method of a paper, or a change of group (for example U(1) to SU(N)) or of dimension. Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Also use it to check the user's own HMC, force, or operator code (for example a ΔH that does not shrink with the step size). Reuse existing parts, keep the extension portable, and write tests."
+description: "Develop new features on top of JuliaQCD: a new gauge group (including real and pseudo-real groups such as SO(N), Sp(2N), G2), a new action, smearing, Dirac operator, propagator, or flow, the method of a paper, or a change of group (for example U(1) to SU(N)), of dimension, or of the fermion representation (adjoint, two-index). Use when the request goes beyond what JuliaQCD v1 or the tested scripts provide (for example HMC with the Iwasaki or Symanzik action), and for questions about a gauge group itself (is a representation real, complex, or pseudo-real; generators; center), which it answers numerically. Also use it to check the user's own HMC, force, or operator code (for example a ΔH that does not shrink with the step size). Reuse existing parts, keep the extension portable, and write tests."
 ---
 
 # juliaqcd-extend
@@ -121,6 +121,48 @@ When nothing in JuliaQCD can generate the configurations yet (no SO(N)
 update exists), the common workflow stops after the settings table and the
 plan: present the table of parts, the missing pieces, and the tests the
 new code must pass, and ask the user before writing the package.
+
+## Fermions in another representation
+
+JuliaQCD v1 has fermions in the defining representation only (code map,
+`juliaqcd/references/code-map/LatticeDiracOperators.md`, "Fermion in
+another representation"; the adjoint code under `deprecated/` is pre-v1, do
+not use it). Build the representation as a map of links, so that the
+operator, the action, and the force machinery of JuliaQCD are reused:
+
+1. Settle the theory first: the representation (adjoint, two-index
+   symmetric or antisymmetric, other), Dirac or Majorana fermions, Nf, and
+   whether the representation is complex, real, or pseudo-real
+   (`check_group.jl` and `references/groups.md`; for a real representation
+   the fermion determinant may be replaced by a Pfaffian, and the sign
+   question has to be answered before any algorithm is chosen).
+2. Write the map R(U) from defining links to representation links as a
+   link-to-link layer, in the user's package (for the adjoint,
+   R(U)^{ab} = 2 tr(T^a U T^b U†) with tr(T^a T^b) = δ^{ab}/2, a real
+   matrix of size N² − 1). Treat it like a smearing: forward map and a
+   pullback of the force to the defining links, following
+   `SmearedFermiAction` (LatticeDiracOperators,
+   `src/action/NHYPSmearedFermiAction.jl`).
+3. Test the map alone before any fermion code, on random SU(N) matrices:
+   homomorphism R(UV) = R(U)R(V); R(U†) = R(U)†; R(U) unitary (orthogonal
+   for a real representation) of the expected dimension; the character
+   (adjoint: tr R(U) = |tr U|² − 1); the center (the adjoint is invariant
+   under U → zU, z ∈ Z_N); and the pullback against a finite difference of
+   a scalar function of R(U).
+4. Build the Wilson operator on the representation links: create the
+   fermion field with the representation dimension as the number of colors
+   and pass R(U) as the links (the v1 operator takes the links as given).
+   Test it as `check_fermion.jl` tests the defining one: against a dense
+   matrix built from the reference operator on R(U); γ₅-hermiticity; gauge
+   covariance with R(g) acting on the fermion; the free field (R(1) = 1).
+5. Then the action and HMC: the force on the defining links against a
+   finite difference of S_F, and the checks of `check_hmc_wilson.jl`
+   (heat bath, reversibility, rms ΔH ∝ δτ², ⟨exp(−ΔH)⟩ = 1), which can be
+   run on the user's action through the same MD interface.
+
+Present the parts table (step 1 of "Before writing code") with these rows,
+and build nothing before the user has answered step 1. Report the results
+as unverified by this skill set.
 
 ## Another gauge action (Iwasaki, Symanzik, DBW2)
 

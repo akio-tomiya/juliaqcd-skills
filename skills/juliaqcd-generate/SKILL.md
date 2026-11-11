@@ -1,15 +1,17 @@
 ---
 name: juliaqcd-generate
-description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, asks how long a run will take or how much memory it needs (answered by a short timed trial, not from general knowledge), or wants checkpoints and restarts."
+description: "Generate gauge configurations with JuliaQCD (pure-gauge HMC with the Wilson action for SU(N) in 2, 3, or 4 dimensions, and HMC with Nf = 2 Wilson or Wilson-clover fermions in 4 dimensions, optionally on stout-smeared links) and monitor their quality: thermalization, acceptance, <exp(-dH)>, autocorrelation time by the Gamma method, topology freezing. Use when the user wants an ensemble, asks whether a run is healthy, asks how long a run will take or how much memory it needs (answered by a short timed trial, not from general knowledge), or wants checkpoints and restarts."
 ---
 
 # juliaqcd-generate
 
-Status: pure-gauge HMC (Wilson action, SU(N), 2 to 4 dimensions) is written
-and tested. Dynamical fermions, heat bath runs, and improved actions are not
-written yet: `hmc_puregauge.jl` has no `action=` argument, and a β meant for
+Status: pure-gauge HMC (Wilson action, SU(N), 2 to 4 dimensions) and HMC
+with two flavors of Wilson or Wilson–clover fermions, optionally on stout
+links (four dimensions, see "Dynamical Wilson and clover fermions") are
+written and tested. Other fermions (staggered, domain wall, odd Nf), heat
+bath runs, and improved gauge actions are not written yet: `hmc_puregauge.jl` has no `action=` argument, and a β meant for
 the Iwasaki or Symanzik action would silently give a Wilson ensemble at a
-different coupling. For another action see `juliaqcd-extend`; for dynamical
+different coupling. For another action see `juliaqcd-extend`; for other
 fermions, LatticeQCD.jl (see the entry skill, "Requests outside what is
 tested here").
 
@@ -45,7 +47,11 @@ the plugin's `skills` folder (entry skill, "Where files go").
    lattice=8,8`. Every line must say PASS. See "What the checks test"
    below. It writes a few small JLD2 files to `workdir=` (default: a new
    temporary directory). About 2 minutes and 1.5 GB for 4⁴ SU(3); on a
-   laptop, ask first (entry skill, "Which machine").
+   laptop, ask first (entry skill, "Which machine"). When the user asks
+   whether the HMC works, the checks are the first half of the answer;
+   the second is a short chain with `hmc_puregauge.jl` (at a β the user
+   gives) and `monitor.jl`, reporting the thermalization cut and any WARN.
+   Plan both, even when the first must wait for an approval.
 4. Measure the cost with `hmc_puregauge.jl` at the production β: about 10
    trajectories on the production lattice give the seconds per trajectory
    (recorded in `history.csv`) and the memory directly; extrapolate from a
@@ -133,6 +139,71 @@ deconfinement study take |P| (its average over Z(N) sectors is zero on a
 finite lattice), one run per β with `q_every=0`, check each run with the
 monitor, and treat the susceptibility and the peak position as glue code
 (entry skill, "Requests outside what is tested here").
+
+## Dynamical Wilson and clover fermions (Nf = 2)
+
+`hmc_wilson.jl` runs HMC with two degenerate flavors of Wilson
+(`csw=0`) or Wilson–clover fermions and the Wilson plaquette gauge action,
+for SU(N) in four dimensions, with fermion boundary conditions periodic in
+space and antiperiodic in time. With `rho > 0` the fermions see
+`smear_iterations` steps of isotropic stout smearing (all links; the gauge
+action stays on the thin links) and the force is pulled back to the thin
+links. It writes the same files as `hmc_puregauge.jl`, so `monitor.jl` and
+the measurements read the run.
+
+1. Settings table: as for pure gauge, plus κ, c_SW (0 for plain Wilson),
+   and the smearing (ρ and the number of steps, or none). All come from
+   the user or a paper; κ_c and c_SW are not taken from memory (entry
+   skill, "Values from the literature"). Say that the action is the Wilson
+   plaquette action with Nf = 2, the integrator Sexton–Weingarten with the
+   fermion force on the outer `steps` and the gauge force `n_fast` (default
+   4) times inside each, and the solver tolerance `eps_cg` (default 1e-14,
+   on the squared relative residual).
+2. Run `check_fermion.jl` in `juliaqcd-measure` (the operator against the
+   reference), then the checks with the production κ, c_SW, and smearing:
+
+   ```
+   julia --project=env $SKILLS/juliaqcd-generate/scripts/check_hmc_wilson.jl \
+       colors=3 lattice=4,4,4,4 kappa=0.13 csw=1.5 rho=0.1 smear_iterations=2
+   ```
+
+   | Check | What a failure means |
+   |---|---|
+   | S_F after the heat bath = \|ξ\|², and \|ξ\|²/(4NV) = 1 | pseudofermion drawn with the wrong operator (D instead of D†) or the wrong noise width |
+   | S_F = φ†(D†D)⁻¹φ of `FermionReference` | action, operator, or solver differs from the reference on the same (smeared) links |
+   | stout links = reference, ρ → 0 leaves them | smearing parameters or staples differ |
+   | κ = 0: fermion force = 0 | force not built from the operator |
+   | reversibility to the solver tolerance | non-symmetric integrator or state carried between steps |
+   | rms ΔH ∝ δτ² | fermion force (or its stout pullback) not the gradient of S_F |
+   | ⟨exp(−ΔH)⟩ = 1, links in SU(N) | energy not conserved in a way Metropolis cannot fix |
+
+   `selftest_hmc_wilson.jl` shows that a force with the wrong κ, a stout
+   pullback with the wrong ρ, and φ = Dξ are each caught.
+3. Measure the cost with a short trial, as for pure gauge; the time per
+   trajectory grows with κ (solver iterations) and with the volume.
+   Measured on one core of an Apple M4 (2026-11-11): 4⁴ SU(3), κ = 0.12,
+   10 steps: 0.35 s (Wilson) and 0.57 s (clover, two stout steps); 4³×8,
+   κ = 0.13, stout, 12 steps: 2.3 s per trajectory.
+4. Production:
+
+   ```
+   julia --project=env $SKILLS/juliaqcd-generate/scripts/hmc_wilson.jl out=runs/NAME \
+       colors=3 lattice=8,8,8,16 beta=BETA kappa=KAPPA csw=CSW ntraj=N steps=STEPS seed=1234
+   ```
+
+   Monitor with `monitor.jl` as for pure gauge. Acceptance falls as κ
+   approaches κ_c; raise `steps` and keep `tau = 1`.
+
+A restart (`restart=true`) continues the chain with the same momenta,
+pseudofermions, and Metropolis numbers, but not bit for bit: the solver
+starts from a different initial guess after a restart, so ΔH differs at
+the level of the solver tolerance (seen: 4e-7, with the same accept
+decisions and plaquettes equal to 1e-15).
+
+Not covered: odd Nf (RHMC; see the feature map for its history),
+staggered and domain-wall fermions, even-odd preconditioning, Hasenbusch
+mass preconditioning, multiple time scales beyond the two levels here,
+GPU and MPI. These go through LatticeQCD.jl or `juliaqcd-extend`.
 
 ## Low acceptance
 

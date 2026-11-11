@@ -4,7 +4,7 @@
 
 Agent skills for lattice gauge theory with [JuliaQCD](https://github.com/akio-tomiya/LatticeQCD.jl) (v1 and later), for Claude Code and Codex.
 
-Status: early version. Written and tested: pure-gauge HMC with run-quality monitoring (`juliaqcd-generate`), pure-gauge measurements with the gradient flow, t0, w0, Wilson loops, and the static potential, and quenched Wilson and Wilson–clover meson correlators with effective masses (`juliaqcd-measure`), and a reference implementation of gauge groups with checks (`juliaqcd-extend`). The other skills are placeholders.
+Status: early version. Written and tested: pure-gauge HMC and Nf = 2 Wilson and Wilson–clover HMC (optionally on stout-smeared links), with run-quality monitoring (`juliaqcd-generate`), pure-gauge measurements with the gradient flow, t0, w0, Wilson loops, and the static potential, and quenched Wilson and Wilson–clover meson correlators with effective masses (`juliaqcd-measure`), and a reference implementation of gauge groups with checks (`juliaqcd-extend`). The other skills give procedures without tested scripts of their own. The tests of the skills themselves are described in [tests/README.md](tests/README.md).
 
 ## What it is for
 

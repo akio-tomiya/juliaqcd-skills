@@ -4,9 +4,9 @@
 
 Julia の格子ゲージ理論のパッケージ群 [JuliaQCD](https://github.com/akio-tomiya/LatticeQCD.jl)（v1 以降）を、Claude Code や Codex から使うためのスキル集です。
 
-まだ作り始めたばかりの版です。今は次の 3 つが動き、試験も済んでいます。ほかのスキルは名前と予定の範囲だけで、中身はこれから書きます。
+まだ作り始めたばかりの版です。今は次のものが動き、試験も済んでいます。ほかのスキルには手順だけが書いてあり、試験済みの台本はまだありません。スキル自身の試験のやり方は [tests/README.md](tests/README.md)（英語）にあります。
 
-- 純ゲージの HMC と、生成の質の監視（`juliaqcd-generate`）
+- 純ゲージの HMC、Nf = 2 の Wilson と clover のフェルミオンの HMC（stout スメアしたリンクの上でも）、生成の質の監視（`juliaqcd-generate`）
 - 測定。純ゲージのグラディエントフローと t0・w0、Wilson ループと静的ポテンシャル。クエンチ近似での Wilson と clover のクォークによるメソンの相関関数と有効質量（`juliaqcd-measure`）
 - ゲージ群の参照実装と検査（`juliaqcd-extend`）
 

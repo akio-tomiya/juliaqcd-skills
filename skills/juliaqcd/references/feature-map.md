@@ -24,9 +24,10 @@ LatticeQCD 1.x is a pre-v1 environment: errors from inside `run_wizard()` or
 `run_LQCD` there are version problems, not bugs in the user's input. Check
 with `Pkg.status()` and create a fresh environment with LatticeQCD 2.
 
-VisualizingLQCD.jl 0.0.1 requires Gaugefields 0.5 and cannot share an
-environment with the v1 packages. Visualize ILDG files written by v1 in a
-separate environment.
+VisualizingLQCD.jl 0.1.0 (registered, Julia 1.11 or later) requires
+Gaugefields 1.1 and shares an environment with the v1 packages; it reads
+the JLD2 and ILDG files that v1 writes (`juliaqcd-visualize`). Version
+0.0.1 required Gaugefields 0.5 and could not.
 
 ## Packages
 

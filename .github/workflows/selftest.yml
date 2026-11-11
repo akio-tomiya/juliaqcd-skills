@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  groups:
+  standard-library:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -16,9 +16,7 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia }}
-      - name: Group checks and self-test
-        run: julia skills/juliaqcd-extend/scripts/selftest.jl
-      - name: Monitor self-test on synthetic histories
-        run: julia skills/juliaqcd-generate/scripts/selftest_monitor.jl
-      - name: Analysis self-test on synthetic data
-        run: julia skills/juliaqcd-measure/scripts/selftest_analysis.jl
+      - name: Static checks of the skills
+        run: julia tests/static_check.jl
+      - name: Self-tests that need no packages
+        run: julia tests/run_checks.jl level=ci
